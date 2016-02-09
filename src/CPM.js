@@ -1,5 +1,4 @@
-/** The core CPM class. Can be used for two- or three-dimensional simulations.
-	*/
+/** The core CPM class. Can be used for two- or three-dimensional simulations. */
     
  
 function CPM( ndim, field_size, conf ){

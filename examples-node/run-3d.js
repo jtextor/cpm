@@ -5,6 +5,7 @@ var CPM = require("../src/CPM.js")
 var CPMStats = require("../src/CPMStats.js")
 var nrCells = parseInt(process.argv[2]) || 1
 var fieldSize = parseInt(process.argv[3]) || 200
+var framerate = parseInt(process.argv[4]) || 10
 
 var C = new CPM( 3, {x: fieldSize, y:fieldSize, z:fieldSize}, {USE_CONNECTIVITY : [0,0,0],
 	FRC_BOOST : [0,3,0],
@@ -39,7 +40,8 @@ for( i = 0 ; i < 50 ; i ++ ){
 // actual simulation
 for( i = 0 ; i < 1000 ; i ++ ){
 	C.monteCarloStep()
-	if( i % 50 == 0 ){
+	if( i % framerate == 0 ){
+		Cstat.celltypeMap("output/"+(i/framerate)+".bin")
 		Cstat.centroids()
 	}
 }
