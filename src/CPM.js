@@ -1,4 +1,6 @@
-/** The core CPM class. Can be used for two- or three-dimensional simulations. */
+/** The core CPM class. Can be used for two- or three-dimensional simulations. 
+	Usable from browser and node.js.
+*/
     
  
 function CPM( ndim, field_size, conf ){
@@ -46,7 +48,7 @@ function CPM( ndim, field_size, conf ){
 	
 	this.conf = conf //{
 		// working defaults for 2D migration
-		/*USE_CONNECTIVITY : [0,0,0],
+		/*LAMBDA_CONNECTIVITY : [0,0,0],
 		FRC_BOOST : [0,3,0],
 		LAMBDA_P : [0,2,1],
 		LAMBDA_V : [0,50,50],
@@ -62,7 +64,7 @@ function CPM( ndim, field_size, conf ){
 		ACT_MEAN : "geometric" */
 		
 		// working defaults for 3D migration
-		/*USE_CONNECTIVITY : [0,0,0],
+		/*LAMBDA_CONNECTIVITY : [0,0,0],
 		FRC_BOOST : [0,3,0],
 		LAMBDA_P : [0,.1,.2],
 		LAMBDA_V : [0,10,50],
@@ -134,6 +136,9 @@ CPM.prototype = {
 		var i = this.p2i(p)
 		return (this.cellpixelstype[i] || 
 			this.stromapixelstype[i] || 0)
+	},
+	pixk : function( p ){
+		return this.id2t[this.pixt(p)]	
 	},
 	dot : function( p1, p2 ){
 		var r = 0., i = 0
@@ -325,7 +330,7 @@ CPM.prototype = {
 		var i = 0, N = this.neigh(p)
 		if( t == 0 ){
 			for( ; i < N.length ; i ++ ){
-				if( this.id2t[this.pixt( N[i] )] == this.KIND_NUCLEUS ){
+				if( this.pixk( N[i] ) == this.KIND_NUCLEUS ){
 					return false
 				}
 			}
@@ -402,10 +407,10 @@ CPM.prototype = {
 							this.getCenterOfMass( tgt_type - 1 ) )
 					}
 				}
-				
-				if( this.docopy( deltaH ) && 
-					this.connectivityConstraint( 
-						p2, tgt_type, src_type ) ){
+			
+				deltaH += this.connectivityConstraint( p2, tgt_type, src_type ) 
+	
+				if( this.docopy( deltaH ) ){
 					this.setpix( p2, src_type, per.Pup )
 				} 
 			}
@@ -572,22 +577,23 @@ CPM.prototype = {
 	},
 	
 	connectivityConstraint : function( p, told, tnew ){
-		var N
-		if( this.par("USE_CONNECTIVITY",told) ){
+		var N, cost = this.par("LAMBDA_CONNECTIVITY",told) 
+		if( cost > 0 ){
 			N = this.neigh( p )
 			if( this.nrConnectedComponents( N, told, told )
 				!= this.nrConnectedComponents( N, told, tnew ) ){
-				return false
+				return cost
 			}
 		}
-		if( this.par("USE_CONNECTIVITY",tnew) ){
+		cost = this.par("LAMBDA_CONNECTIVITY",tnew) 
+		if( cost > 0 ){
 			if( !N ) N = this.neigh( p )
 			if( this.nrConnectedComponents( N, tnew, told )
 				!= this.nrConnectedComponents( N, tnew, tnew ) ){
-				return false
+				return cost
 			}
 		}
-		return true
+		return 0
 	},
 	
 	killCell : function(){

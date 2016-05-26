@@ -4,11 +4,11 @@
 var CPM = require("../src/CPM.js")
 var CPMStats = require("../src/CPMStats.js")
 var nrCells = parseInt(process.argv[2]) || 1
-var fieldSize = parseInt(process.argv[3]) || 200
+var fieldSize = parseInt(process.argv[3]) || 1000
 var framerate = parseInt(process.argv[4]) || 10
 
 var C = new CPM( 2, {x: fieldSize, y:fieldSize}, {
-	USE_CONNECTIVITY : [0,0,0],
+	LAMBDA_CONNECTIVITY : [0,0,0],
 	FRC_BOOST : [0,3,0],
 	LAMBDA_P : [0,2,1],
 	LAMBDA_V : [0,50,50],

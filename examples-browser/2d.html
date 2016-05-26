@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1-cell CPM</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="../src/DiceSet.js"></script>
+<script type="text/javascript" src="../src/CPM.js"></script>
+<script type="text/javascript" src="../src/CPMStats.js"></script>
+<script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript">
+
+var C,Cim,t=0
+
+function initialize(){
+	C = new CPM( 2, {x: 400, y:400}, {
+		LAMBDA_CONNECTIVITY : [0,0,0],
+		FRC_BOOST : [0,3,0],
+		LAMBDA_P : [0,2,1],
+		LAMBDA_V : [0,50,50],
+		LAMBDA_ACT : [0,140,0],
+		LAMBDA_DIR : [0,0,200],
+		MAX_ACT : [0,40,0],
+		P : [0,340,100],
+		V : [0,500,100],
+		J_T_STROMA : [NaN,16,16],
+		J_T_ECM : [NaN,20,20],
+		J_T_T : [ [NaN,NaN,NaN], [NaN,100,-40], [NaN,-40,NaN] ],
+		T : 20,
+		ACT_MEAN : "geometric" 
+	})
+		
+	Cim = new CPMCanvas( C )
+
+	for( i = 0 ; i < 4 ; i ++ ){
+		C.seedCell()
+	}
+
+	// burnin phase
+	for( i = 0 ; i < 50 ; i ++ ){
+		C.monteCarloStep()
+	}
+
+	timestep()
+}
+
+
+function timestep(){
+	C.monteCarloStep()
+	Cim.drawCellBorders()
+	if( t++ < 1000 ){
+		requestAnimationFrame( timestep )
+	}
+}
+
+</script>
+</script>
+<body onload="initialize()">
+</body>
+</html>
+
