@@ -1,12 +1,23 @@
 
+
 // Constructor takes a CPM object
 function CPMCanvas( C ){
 	this.C = C
-	this.el = document.createElement("canvas")
 	this.zoom = 1.5
-	this.el.width = C.field_size.x*this.zoom
-	this.el.height = C.field_size.y*this.zoom
-	document.body.appendChild( this.el )
+
+	if( typeof document !== "undefined" ){
+		this.el = document.createElement("canvas")
+		this.el.width = C.field_size.x*this.zoom
+		this.el.height = C.field_size.y*this.zoom
+		document.body.appendChild( this.el )
+
+	} else {
+		var Canvas = require('canvas')
+		this.el = new Canvas( C.field_size.x*this.zoom,
+			C.field_size.y*this.zoom )
+		this.fs = require('fs')
+	}
+
 	this.ctx = this.el.getContext("2d")
 	this.ctx.lineWidth = .2
 	this.ctx.lineCap="butt"
@@ -87,10 +98,15 @@ CPMCanvas.prototype = {
 				this.pxf( this.C.i2p( cst[i] ) )
 			}
 		}
+	},
+
+	writePNG : function( fname ){
+		this.fs.writeFile(fname, this.el.toBuffer())
 	}
 }
 
 
-
-
+if( typeof module !== "undefined" ){
+	module.exports = CPMCanvas
+}
 

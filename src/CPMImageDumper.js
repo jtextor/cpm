@@ -3,7 +3,6 @@
 
 var fs = require("fs")
 
-
 // Constructor takes a CPM object
 function CPMImageDumper( C ){
 	this.C = C

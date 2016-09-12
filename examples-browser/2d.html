@@ -45,6 +45,7 @@ function initialize(){
 
 function timestep(){
 	C.monteCarloStep()
+	Cim.clear( "FFFFFF" )
 	Cim.drawCellBorders()
 	if( t++ < 1000 ){
 		requestAnimationFrame( timestep )
