@@ -3,36 +3,36 @@
     pixels at cell borders. */
 
 function DiceSet() {
-	this.indices = {}
+	this.indices = new Map() // {}
 	this.elements = []
 	this.length = 0
 }
 
 DiceSet.prototype = {
 	insert : function( v ){
-		if( this.contains( v ) ){
+		if( this.indices.has( v ) ){
 			return
 		}
-		this.indices[v] = this.elements.length
+		this.indices.set( v, this.length )
 		this.elements.push( v )
 		this.length ++ 
 	},
 	remove : function( v ){
-		if( !this.contains( v ) ){
+		if( !this.indices.has( v ) ){
 			return
 		}
-		var i = this.indices[v]
-		delete this.indices[v]
+		var i = this.indices.get(v)
+		this.indices.delete(v)
 		var e = this.elements.pop()
 		if( e == v ){
 			return
 		}
 		this.elements[i] = e
-		this.indices[this.elements[i]] = i
+		this.indices.set(e,i)
 		this.length --
 	},
 	contains : function( v ){
-		return (v in this.indices)
+		return this.indices.has(v) // (v in this.indices)
 	},
 	sample : function(){
 		return this.elements[Math.floor(Math.random()*this.length)]

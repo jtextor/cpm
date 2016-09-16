@@ -8,6 +8,9 @@ function CPM( ndim, field_size, conf ){
 	if( ndim == 2 ){
 		this.neigh = this.neigh2D
 		this.neighC = this.neighC2D
+		this.p2i = this.p2i3D
+		this.i2p = this.i2p3D
+
 		this.crossesBorder = function( x, y ){
 			var d = x[0]-y[0]
 			if( d < -1 || d > 1 ) return true
@@ -19,6 +22,9 @@ function CPM( ndim, field_size, conf ){
 	} else {
 		this.neigh = this.neigh3D
 		this.neighC = this.neighC3D
+		this.p2i = this.p2i2D
+		this.i2p = this.i2p2D
+
 		this.crossesBorder = function( x, y, z ){
 			var d = x[0]-y[0]
 			if( d < -1 || d > 1 ) return true
@@ -29,6 +35,23 @@ function CPM( ndim, field_size, conf ){
 			return false
 		}
 	}
+
+	this.X_BITS = 1+Math.ceil( Math.log2( this.field_size.x ) )
+	this.X_MASK = (1 << this.X_BITS)-1
+
+	this.Y_BITS = 1+Math.ceil( Math.log2( this.field_size.y ) )
+	this.Y_MASK = (1 << this.Y_BITS)-1
+
+	this.Z_BITS = 1+Math.ceil( Math.log2( this.field_size.z ) )
+	this.Z_MASK = (1 << this.Z_BITS)-1
+
+
+	if( this.X_BITS + this.Y_BITS + this.Z_BITS > 32 ){
+		throw("Field size too large -- field cannot be represented as 32-bit number")
+	} else {
+		console.log( "using size : ", this.X_BITS + this.Y_BITS + this.Z_BITS )
+	}
+
 	this.ndim = ndim
 	this.nNeigh = this.neigh([0,0,0].slice(0,ndim)).length
 
@@ -37,7 +60,7 @@ function CPM( ndim, field_size, conf ){
 	this.cellborderpixels = new DiceSet()
 	this.bgborderpixels = new DiceSet() 
 	this.cellpixelsbirth = {}
-	this.cellpixelstype = {}
+	this.cellpixelstype = new Map() //{}
 	this.cellvolume = []
 	this.cellperimeter = []
 	this.centerofmass = []
@@ -124,18 +147,28 @@ CPM.prototype = {
 	ran : function(incl_min, incl_max) {
 		return Math.floor(Math.random() * (1.0 + incl_max - incl_min)) + incl_min
 	},
-	p2i : function( p ){
-		return (this.fmodx(p[0]) << 20) + 
-			(this.fmody(p[1]) << 10) + 
+	p2i3D : function( p ){
+		return (this.fmodx(p[0]) << (this.Z_BITS+this.Y_BITS)) + 
+			(this.fmody(p[1]) << this.Z_BITS) + 
 			this.fmodz(p[2])
 	},
-	i2p : function( i ){
-		return [(i >> 20), (i >> 10) & 0x3FF, i & 0x3FF]
+
+	i2p3D : function( i ){
+		return [i >> (this.Y_BITS + this.Z_BITS), (i >> this.Z_BITS) & this.Y_MASK, i & this.Z_MASK]
 	},
+
+	p2i2D : function(p){
+		return this.fmody(p[0]) << this.Y_BITS + this.fmodx(p[1])
+	},
+
+	i2p2D : function( i ){
+		return [i >> this.Y_BITS, i & this.Y_MASK, 0]
+	},
+
 	pixt : function( p ){
 		var i = this.p2i(p)
-		return (this.cellpixelstype[i] || 
-			this.stromapixelstype[i] || 0)
+		return (this.cellpixelstype[i] ||  
+			this.stromapixelstype[i] || 0 )
 	},
 	pixk : function( p ){
 		return this.id2t[this.pixt(p)]	
