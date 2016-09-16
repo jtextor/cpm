@@ -101,7 +101,7 @@ CPMCanvas.prototype = {
 	},
 
 	writePNG : function( fname ){
-		this.fs.writeFile(fname, this.el.toBuffer())
+		this.fs.writeFileSync(fname, this.el.toBuffer())
 	}
 }
 
