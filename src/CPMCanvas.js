@@ -3,7 +3,7 @@
 // Constructor takes a CPM object
 function CPMCanvas( C ){
 	this.C = C
-	this.zoom = 1.5
+	this.zoom = 1 
 
 	if( typeof document !== "undefined" ){
 		this.el = document.createElement("canvas")
@@ -88,6 +88,18 @@ CPMCanvas.prototype = {
 			}
 		}
 	},
+
+	drawOnCellBorders : function( col ){
+		col = col || "000000"
+		var p, pc, pu, pd, pl, pr
+		this.col( col )
+		this.ctx.fillStyle="#"+col
+		var cst =  this.C.cellborderpixels.elements
+		for( i = 0 ; i < cst.length ; i ++ ){
+			this.pxf( this.C.i2p( cst[i] ) )
+		}
+	},
+
 
 	drawCells : function( kind, col ){
 		col = col || "000000"

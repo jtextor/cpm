@@ -19,6 +19,7 @@ function CPM( ndim, field_size, conf ){
 			return false
 		}
 		this.field_size.z = 1
+		this.midpoint = [Math.round(this.field_size.x/2),Math.round(this.field_size.y/2),0]
 	} else {
 		this.neigh = this.neigh3D
 		this.neighC = this.neighC3D
@@ -34,6 +35,8 @@ function CPM( ndim, field_size, conf ){
 			if( d < -1 || d > 1 ) return true
 			return false
 		}
+
+		this.midpoint = [Math.round(this.field_size.x/2),Math.round(this.field_size.y/2),Math.round(this.field_size.z/2)]
 	}
 
 	this.X_BITS = 1+Math.ceil( Math.log2( this.field_size.x ) )
@@ -60,7 +63,7 @@ function CPM( ndim, field_size, conf ){
 	this.cellborderpixels = new DiceSet()
 	this.bgborderpixels = new DiceSet() 
 	this.cellpixelsbirth = {}
-	this.cellpixelstype = new Map() //{}
+	this.cellpixelstype = {}
 	this.cellvolume = []
 	this.cellperimeter = []
 	this.centerofmass = []
@@ -190,6 +193,11 @@ CPM.prototype = {
 		}
 		return r/Math.sqrt(norm1)/Math.sqrt(norm2)
 	},
+
+	getVolume : function( t ){
+		return this.cellvolume[t]
+	},
+
 	getCenterOfMass : function( t ){
 		var r = this.centerofmass[t].slice(0)
 		r[0] /= this.cellvolume[t]
@@ -412,7 +420,11 @@ CPM.prototype = {
 				deltaH += per.r
 				
 				var dhpre = deltaH
-				
+			
+				if( tgt_type != 0 && src_type != 0 ){
+					deltaH -= this.par( "INV", tgt_type, src_type )
+				}	
+
 				if( src_type != 0 ){
 					maxact = this.par("MAX_ACT",src_type)
 					lambdaact = this.par("LAMBDA_ACT",src_type)
@@ -429,15 +441,20 @@ CPM.prototype = {
 						this.activityAt( p1 ))/maxact
 				}
 				
+				/*if( this.conf.target_point ){
+				}*/
+
 				if( dir > 0 ){
 					// HACK this forces cell nuclei to move towards the center of their 
 					// respective cells
 					if( src_type != 0 ){
-						deltaH += dir * this.pointAttractor( p1, p2, 
-							this.getCenterOfMass( src_type - 1 ) )
+						deltaH += dir * this.pointAttractor( p1, p2, this.midpoint
+							//this.getCenterOfMass( src_type - 1 ) 
+						)
 					} else {
-						deltaH += dir * this.pointAttractor( p1, p2, 
-							this.getCenterOfMass( tgt_type - 1 ) )
+						deltaH += dir * this.pointAttractor( p1, p2, this.midpoint
+							//this.getCenterOfMass( tgt_type - 1 ) 
+						)
 					}
 				}
 			
@@ -492,6 +509,11 @@ CPM.prototype = {
 		this.cellvolume[t] --
 		delete this.cellpixelsbirth[i]
 		delete this.cellpixelstype[i]
+		if( this.cellvolume[t] == 0 ){
+			delete this.centerofmass[t]
+			delete this.cellvolume[t]
+			delete this.id2t[t]
+		}
 	},
 	neigh3D : function( p ){
 		var xr = this.fmodx(p[0]+1)
@@ -515,36 +537,44 @@ CPM.prototype = {
 			[xr,yr,p[2]],   [xr,yr,zl],[xr,yr,zr]
 		];
 	},
-	seedCellAt : function( kind, p, addNucleus ){
-		var newid = this.nr_cells+1
-		var oldt = this.pixt( p )
+	
+	makeNewCellID : function( kind ){
+		var newid = ++ this.nr_cells
 		this.cellvolume[newid] = 0
 		this.cellperimeter[newid] = 0
 		this.centerofmass[newid] = [0,0,0]
 		this.id2t[newid] = kind
-		this.nr_cells ++
+		return newid
+	},
+
+	seedCellAt : function( kind, p, opts ){
+		var newid = this.makeNewCellID( kind )
+		var oldt = this.pixt( p )
 		this.setpix( p, newid )
-		if( addNucleus ){
+		if( arguments.length < 3 ){
+			opts = {}
+		}
+		if( opts.addNucleus ){
 			var Np = this.neigh( p ), i = 0
 			for( ; i < Np.length ; i ++ ){
 				if( this.pixt( Np[i] ) == 0 ){
 					this.seedCellAt( this.KIND_NUCLEUS, Np[i], false )
 					return
 				}
-			}	
+			}
 		}
 	},
-	seedCell : function( kind, fixToStroma, addNucleus ){
+	seedCell : function( kind, opts ){
 		var N = 1000, // max amount of trials, avoids infinite loops in degenerate 
 					// situations
-			p, stromapixels, Ns
+			p, stromapixels, Ns, y
 		if( arguments.length < 1 ){
 			kind = 1
 		}
 		if( arguments.length < 2 ){
-			fixToStroma = false
+			opts = {}
 		}
-		if( !fixToStroma ){
+		if( !opts.fixToStroma ){
 			for( ; N>0 ; N-- ){
 				p = [this.ran( 0, this.field_size.x-1 ),
 					this.ran( 0, this.field_size.y-1 )]
@@ -553,8 +583,12 @@ CPM.prototype = {
 				} else {
 					p.push( 0 )
 				}
-				if( this.pixt(p) == 0 ){
-					break
+				t = this.pixt(p)
+				if( t == 0 || opts.brutal ){
+					if( !opts.hasOwnProperty("avoid") ||
+						opts.avoid != this.id2t[t] ){
+						break
+					}
 				} 
 			}
 		} else {
@@ -569,8 +603,17 @@ CPM.prototype = {
 			}
 		}
 		if( N == 0 ) return false
-		this.seedCellAt( kind, p, addNucleus )
+		this.seedCellAt( kind, p, opts )
 	},
+
+	cellKind : function( id ){
+		return this.id2t[ id ]
+	},
+
+	setCellKind : function( id, k ){
+		this.id2t[ id ] = k
+	},
+
 	neigh2D : function( p ){
 		var xr = this.fmodx(p[0]+1)
 		var xl = this.fmodx(p[0]-1)
@@ -579,7 +622,8 @@ CPM.prototype = {
 		var z = this.fmodz(p[2])
 		return [[xl,yl,z],[xl,p[1],z],[xl,yr,z],[p[0],yl,z],
 			[p[0],yr,z],[xr,yl,z],[xr,p[1],z],[xr,yr,z]]
-	},	
+	},
+
 	nrConnectedComponents : function( N, t, tp ){
 		var r = 0, i, v, visited = [], stack = [], _this=this
 		var Nt = function( k ){
@@ -629,11 +673,11 @@ CPM.prototype = {
 		return 0
 	},
 	
-	killCell : function(){
+	killCell : function( t ){
 		if( this.nr_cells == 0 ) return
 		var cpt = Object.keys( this.cellpixelstype ), p
 		for( var i = 0 ; i < cpt.length ; i ++ ){
-			if( this.cellpixelstype[cpt[i]] == this.nr_cells ){
+			if( this.cellpixelstype[cpt[i]] == t ){
 				p = this.i2p(cpt[i])
 				this.setpix( p, this.nr_cells-1 )
 			}
@@ -658,6 +702,9 @@ CPM.prototype = {
 			reduce( function(xa,x){ return xa || x }, false ) 
 	},
 	
+	countCells : function( kind ){
+		return this.id2t.reduce( function(xa,x){ return (x==kind) + xa } )
+	},
 	
 	// 0 3 5 
 	// 1 8 6

@@ -22,15 +22,7 @@ CPMStats.prototype = {
 		return r
 	},
 	centroids : function(){
-		var cp = {}
-		var px = Object.keys( this.C.cellpixelstype ), t, i
-		for( i = 0 ; i < px.length ; i ++ ){
-			t = this.C.cellpixelstype[px[i]]
-			if( !(t in cp ) ){
-				cp[t] = []
-			}
-			cp[t].push( this.C.i2p( px[i] ) )
-		}
+		var cp = this.cellpixels()
 		var tx = Object.keys( cp ), cx, cy, cz, j
 		for( i = 0 ; i < tx.length ; i ++ ){
 			cx=0; cy=0; cz=0
@@ -47,6 +39,19 @@ CPMStats.prototype = {
 				cy  +"\t"+
 				cz )
 		}
+	},
+	// returns an array of pixels per cell.
+	cellpixels : function(){
+		var cp = {}
+		var px = Object.keys( this.C.cellpixelstype ), t, i
+		for( i = 0 ; i < px.length ; i ++ ){
+			t = this.C.cellpixelstype[px[i]]
+			if( !(t in cp ) ){
+				cp[t] = []
+			}
+			cp[t].push( this.C.i2p( px[i] ) )
+		}
+		return cp
 	}
 }
 

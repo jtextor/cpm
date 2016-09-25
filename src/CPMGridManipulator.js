@@ -28,7 +28,7 @@ CPMGridManipulator.prototype = {
 		for( var i = 0 ;  i < ids.length ; i++ ){
 			var t = ids[i]
 			var k = C.cellKind(t)
-			if( k == kind && ( C.getVolume( t ) < C.conf.V[kind]*0.7 ) ){
+			if( k == kind && ( C.getVolume( t ) < C.conf.V[kind]*0.8 ) ){
 				if( Math.random() < p ){
 					this.killCell( t )
 				}

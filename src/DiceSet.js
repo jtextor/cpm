@@ -10,6 +10,9 @@ function DiceSet() {
 
 DiceSet.prototype = {
 	insert : function( v ){
+		if( typeof v == "undefined" ){
+			throw("attempting to insert undefined value!")
+		}
 		if( this.indices.has( v ) ){
 			return
 		}
@@ -24,12 +27,12 @@ DiceSet.prototype = {
 		var i = this.indices.get(v)
 		this.indices.delete(v)
 		var e = this.elements.pop()
+		this.length --
 		if( e == v ){
 			return
 		}
 		this.elements[i] = e
 		this.indices.set(e,i)
-		this.length --
 	},
 	contains : function( v ){
 		return this.indices.has(v) // (v in this.indices)
