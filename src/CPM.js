@@ -71,7 +71,7 @@ function CPM( ndim, field_size, conf ){
 	this.stromapixelstype = {}
 	
 	this.time = 0
-	
+
 	this.conf = conf //{
 		// working defaults for 2D migration
 		/*LAMBDA_CONNECTIVITY : [0,0,0],
@@ -115,6 +115,8 @@ function CPM( ndim, field_size, conf ){
 		this.activityAt = this.activityAtGeom
 	}
 	
+	this.torus = (this.conf.hasOwnProperty("TORUS") && this.conf.TORUS) || false
+
 	this.id2t = []
 }
 
@@ -128,7 +130,8 @@ CPM.prototype = {
 			return this.conf[name][this.id2t[arguments[1]]]
 		}
 		if( arguments.length == 3 ){
-			return this.conf[name][this.id2t[arguments[1]]][this.id2t[arguments[2]]]
+			return this.conf[name][this.id2t[arguments[1]]][
+				this.id2t[arguments[2]]]
 		}
 	},
 	/* A mod function with sane behaviour for negative numbers. */
@@ -400,7 +403,7 @@ CPM.prototype = {
 			p1 = this.i2p( p1 )
 			N = this.neigh( p1 )
 			p2 = N[this.ran(0,N.length-1)]
-			if( this.crossesBorder( p1, p2 ) ) continue
+			if( !this.torus && this.crossesBorder( p1, p2 ) ) continue
 			
 			src_type = this.pixt( p1 )
 			tgt_type = this.pixt( p2 )
@@ -421,7 +424,7 @@ CPM.prototype = {
 				
 				var dhpre = deltaH
 			
-				if( tgt_type != 0 && src_type != 0 ){
+				if( tgt_type != 0 && src_type != 0 && this.conf.INV ){
 					deltaH -= this.par( "INV", tgt_type, src_type )
 				}	
 
@@ -462,7 +465,7 @@ CPM.prototype = {
 	
 				if( this.docopy( deltaH ) ){
 					this.setpix( p2, src_type, per.Pup )
-				} 
+				}
 			}
 		}
 		this.time ++
@@ -559,10 +562,11 @@ CPM.prototype = {
 			for( ; i < Np.length ; i ++ ){
 				if( this.pixt( Np[i] ) == 0 ){
 					this.seedCellAt( this.KIND_NUCLEUS, Np[i], false )
-					return
+					return newid
 				}
 			}
 		}
+		return newid
 	},
 	seedCell : function( kind, opts ){
 		var N = 1000, // max amount of trials, avoids infinite loops in degenerate 
@@ -603,7 +607,7 @@ CPM.prototype = {
 			}
 		}
 		if( N == 0 ) return false
-		this.seedCellAt( kind, p, opts )
+		return this.seedCellAt( kind, p, opts )
 	},
 
 	cellKind : function( id ){
