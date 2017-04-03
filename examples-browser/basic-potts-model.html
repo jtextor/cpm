@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Basic Potts Model Without Volume Constraint</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="../src/DiceSet.js"></script>
+<script type="text/javascript" src="../src/CPM.js"></script>
+<script type="text/javascript" src="../src/CPMStats.js"></script>
+<script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript" src="../src/TrackCanvas.js"></script>
+<script type="text/javascript">
+
+var track_canvas, track_ctx, zoom = 2, C, Cim, Cstat, Ctracks,
+	cid = 0
+
+function seedGrid(){
+	if( !cid || !C.getVolume(cid) ){
+		cid = C.seedCellAt( 1, [1,1,0] )
+	}
+	for( var i = 0 ; i < C.field_size.x ; i ++ ){
+		for( var j = 0 ; j < C.field_size.y ; j ++ ){	
+			if( Math.random() < 0.49 ){
+				C.setpix( [ i, j, 0 ], cid )
+			} else {
+				if( C.pixt( [i,j,0] ) ){
+				C.delpix( [ i, j, 0 ] )
+				}
+			}
+		}
+	}
+}
+
+
+function initialize(){
+	C = new CPM( 2, {x: 90, y:90}, {
+		LAMBDA_CONNECTIVITY : [0,0],
+		LAMBDA_P : [0,0],
+		LAMBDA_V : [0,0],
+		LAMBDA_ACT : [0,250],
+		LAMBDA_DIR : [0,0],
+		MAX_ACT : [0,0],
+		P : [0,700],
+		V : [0,1000],
+		J_T_ECM : [NaN,20],
+		J_T_T : [ [NaN,NaN], [NaN,100] ],
+		T : 0.01,
+		ACT_MEAN : "geometric",
+		TORUS: false
+	})
+	//seedGrid()
+	Cim = new CPMCanvas( C, {zoom:zoom} )
+	Cstat = new CPMStats( C )
+	timestep()
+}
+
+
+function timestep(){
+	C.monteCarloStep()
+	Cim.clear( "FFFFFF" )
+	Cim.drawCells( 1, "AA0000" )
+	var vol = C.getVolume(cid)
+	if( vol==1 || vol==C.field_size.x*C.field_size.y ){
+		seedGrid()
+	}
+	requestAnimationFrame( timestep )
+}
+</script>
+<style type="text/css">
+body{
+margin:0; padding:0;
+}
+</style>
+<body onload="initialize();seedGrid()" onclick="seedGrid()">
+
+<p>Click on canvas to re-start simulation.</p>
+
+</body>
+
+</html>
+
+

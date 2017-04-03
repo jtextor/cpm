@@ -51,9 +51,7 @@ function CPM( ndim, field_size, conf ){
 
 	if( this.X_BITS + this.Y_BITS + this.Z_BITS > 32 ){
 		throw("Field size too large -- field cannot be represented as 32-bit number")
-	} else {
-		console.log( "using size : ", this.X_BITS + this.Y_BITS + this.Z_BITS )
-	}
+	} 
 
 	this.ndim = ndim
 	this.nNeigh = this.neigh([0,0,0].slice(0,ndim)).length
