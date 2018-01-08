@@ -93,7 +93,7 @@ CPMCanvas.prototype = {
 		}
 	},
 
-	drawActivityValues : function( kind, maxval ){
+	drawActivityValues : function( kind ){
 		var cst = Object.keys( this.C.cellpixelstype ), ii, sigma,
 			tohex = function(a) { a = parseInt(255*a).toString(16); 
 				return  ("00".substring(0,2-a.length))+a }, i
@@ -136,6 +136,17 @@ CPMCanvas.prototype = {
 			}
 		}
 	},
+
+	drawStroma : function( col ){
+		col = col || "000000"
+		this.col( col )
+		var cst = Object.keys( this.C.stromapixelstype ), i
+		for( i = 0 ; i < cst.length ; i ++ ){
+			this.pxf( this.C.i2p( cst[i] ) )
+		}
+	},
+
+
 
 	writePNG : function( fname ){
 		this.fs.writeFileSync(fname, this.el.toBuffer())
