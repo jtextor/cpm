@@ -44,7 +44,6 @@ CPMGridManipulator.prototype = {
 	doDivision2D: function( kind, probability, Cim ){
 		var cp = this.cellpixels, C = this.C, Cs = this.Cs
 		var ids = Object.keys(cp)
-		var centroids = Cs.getCentroids()
 		var minvolume = C.conf.V[k]-50
 		
 
@@ -61,8 +60,8 @@ CPMGridManipulator.prototype = {
 			// minvolume (the cellkind's target volume minus 50).
 			if( k == kind && ( C.getVolume( id ) >= minvolume ) && Math.random() < probability ){
 				var bxx = 0, bxy = 0, byy=0,
-					com = Cs.getCentroidOf( id ), cx, cy, x2, y2, side, b, T, D, x0, y0, x1, y1,
-					L1, L2
+					com = Cs.getCentroidOf( id ), cx, cy, x2, y2, side, T, D, x0, y0, x1, y1,
+					L2
 
 				// Loop over the pixels belonging to this cell
 				for( var j = 0 ; j < cp[id].length ; j ++ ){
@@ -98,7 +97,7 @@ CPMGridManipulator.prototype = {
 				var nid = C.makeNewCellID( k )
 
 				// Loop over the pixels belonging to this cell
-				for( var j = 0 ; j < cp[id].length ; j ++ ){
+				for( j = 0 ; j < cp[id].length ; j ++ ){
 
 					// coordinates of current cell relative to center of mass
 					x2 = cp[id][j][0]-com[0]

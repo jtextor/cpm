@@ -20,7 +20,7 @@ CPMStats.prototype = {
 	// for simulation on FRC network. Returns all cells that are in contact with
 	// a stroma cell.
 	cellsOnNetwork : function(){
-		var px = this.C.cellborderpixels.elements, i,j, N, r = {}, t, tn
+		var px = this.C.cellborderpixels.elements, i,j, N, r = {}, t
 		for( i = 0 ; i < px.length ; i ++ ){
 			t = this.C.pixti( px[i] )
 			if( r[t] ) continue

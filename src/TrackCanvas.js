@@ -11,12 +11,12 @@ function TrackCanvas( Cstat, options ){
 
 	if( typeof document !== "undefined" ){
 		this.el = document.createElement("canvas")
-		this.el.width = C.field_size.x*this.zoom
-		this.el.height = C.field_size.y*this.zoom
+		this.el.width = this.C.field_size.x*this.zoom
+		this.el.height = this.C.field_size.y*this.zoom
 	} else {
-		var Canvas = require('canvas')
-		this.el = new Canvas( C.field_size.x*this.zoom,
-			C.field_size.y*this.zoom )
+		var Canvas = require("canvas")
+		this.el = new Canvas( this.C.field_size.x*this.zoom,
+			this.C.field_size.y*this.zoom )
 	}
 	this.ctx = this.el.getContext("2d")
 }

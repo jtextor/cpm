@@ -12,10 +12,10 @@ function CPMCanvas( C, options ){
 		var parent_element = (options && options.parentElement) || document.body
 		parent_element.appendChild( this.el )
 	} else {
-		var Canvas = require('canvas')
+		var Canvas = require("canvas")
 		this.el = new Canvas( C.field_size.x*this.zoom,
 			C.field_size.y*this.zoom )
-		this.fs = require('fs')
+		this.fs = require("fs")
 	}
 
 	this.ctx = this.el.getContext("2d")
@@ -51,7 +51,7 @@ CPMCanvas.prototype = {
 
 	/* For easier color naming */
 	col : function( hex ){
-		this.ctx.fillStyle="#"+hex;
+		this.ctx.fillStyle="#"+hex
 	},
 	/* Color the whole grid in color [col] */
 	clear : function( col ){
@@ -105,8 +105,8 @@ CPMCanvas.prototype = {
 		// cst contains the pixel ids of all non-background/non-stroma cells in
 		// the grid. The function tohex is used to convert computed color gradients
 		// to the hex format.
-		var cst = Object.keys( this.C.cellpixelstype ), ii, sigma,
-			tohex = function(a) { a = parseInt(255*a).toString(16); 
+		var cst = Object.keys( this.C.cellpixelstype ), ii, sigma, a,
+			tohex = function(a) { a = parseInt(255*a).toString(16) 
 				return  ("00".substring(0,2-a.length))+a }, i
 
 		// loop over all pixels belonging to non-background, non-stroma
@@ -132,7 +132,6 @@ CPMCanvas.prototype = {
 	/* colors outer pixels of each cell */
 	drawOnCellBorders : function( col ){
 		col = col || "000000"
-		var p, pc, pu, pd, pl, pr
 		this.col( col )
 		this.ctx.fillStyle="#"+col
 		var cst =  this.C.cellborderpixels.elements, i

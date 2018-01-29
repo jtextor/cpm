@@ -602,7 +602,7 @@ CPM.prototype = {
 		}
 		cost = this.par("LAMBDA_CONNECTIVITY",tnew) 
 		if( cost > 0 ){
-			if( !N ) N = this.neighi( p )
+			if( !N ) N = this.neighi( i )
 			if( this.nrConnectedComponents( N, tnew, told )
 				!= this.nrConnectedComponents( N, tnew, tnew ) ){
 				return cost
@@ -621,7 +621,7 @@ CPM.prototype = {
 	*/
 	monteCarloStep : function(){
 
-		var delta_t = 0.0, p1i, p2i, src_type, tgt_type, N, per, maxact, lambdaact, dir
+		var delta_t = 0.0, p1i, p2i, src_type, tgt_type, N, per, maxact, lambdaact
 
 		// this loop tracks the number of copy attempts until one MCS is completed.
 		while( delta_t < 1.0 ){
@@ -776,7 +776,7 @@ CPM.prototype = {
 	},
 	/* Update border elements after a successful copy attempt. */
 	updateborderneari : function( i ){
-		var i, j, k, t, isborder, N
+		var j, k, t, isborder, N
 
 		// neighborhood + pixel itself (in indices)
 		var Ni = this.neighi(i)
@@ -797,7 +797,7 @@ CPM.prototype = {
 			N = this.neighi( Ni[j] )
 			for( k = 0 ; k < N.length ; k ++ ){
 				if( this.pixti( N[k] ) != t ){
-					isborder = true; break;
+					isborder = true; break
 				}
 			}
 
@@ -836,13 +836,10 @@ CPM.prototype = {
 		return newid
 	},
 	/* Seed a new cell of celltype "kind" onto position "p".*/
-	seedCellAt : function( kind, p, opts ){
+	seedCellAt : function( kind, p ){
 		var newid = this.makeNewCellID( kind )
 		var id = this.p2i( p )
 		this.setpixi( id, newid )
-		if( arguments.length < 3 ){
-			opts = {}
-		}
 		return newid
 	},
 	/* Seed a new cell of celltype "kind" to a random position on the grid.
