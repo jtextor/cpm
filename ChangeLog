@@ -1,0 +1,76 @@
+2018-01-29 Inge Wortel <ingewortel@gmail.com>
+
+	* ChangeLog : created.
+
+	* src/CPM.js (general) : merged with another version optimized for speed (fewer pixel coordinate to index conversions; see also other changes). Commented code and reordered some functions for easier annotation. Removed support for the torus option (linked grid border) and for cell nuclei. Removed use of LAMBDA_DIR. 
+
+	* src/CPM.js (this.id2t) : attribute id2t renamed to t2k for consistency with variable naming in other functions (t for the cell id, k for the cellkind). Replaced calls to this.t2k with the functions cellKind and setCellKind wherever possible.
+
+	* src/CPM.js (this.centerofmass) : attribute centerofmass removed. The center of mass of each cell is no longer updated for every copy attempt, because this requires internal conversions from pixel index to coordinates (slow). Instead, the center of mass can still be computed for every MCS - see src/CPMstats.js.
+
+	* src/CPM.js (getCenterOfMass) : removed, because no longer needed now that center of mass is not tracked internally.
+
+	* src/CPM.js (pixt,pixk) : modified and renamed to pixti, pixki. The new functions work on pixel index i rather than coordinates p. pixt is still available for compatibility with other classes, but calls pixti internally.
+
+	* src/CPM.js (perconstraint) : modified and renamed to perconstrainti, which works on pixel index rather than coordinates p. Perimeter now only monitored for the two cells involved in the copy attempt (old type and new type) rather than all types in the neighborhood (because the perimeter can only change for the cells that gain or lose a pixel, tracking perimeter for other cells is redundant).
+
+	* src/CPM.js (activityAtArith, activityAtGeom) : modified to use pixel index i rather than coordinates p.
+
+	* src/CPM.js (connectivityConstraint) : modified to work with pixel index i rather than coordinates p.
+
+	* src/CPM.js (setpix,delpix) : modified to work with pixel index i rather than coordinates p, renamed to setpixi and delpixi. Center of mass no longer updated (see above). If setpix succeeds in a copy attempt into the last pixel of a cell, this cellid is now removed from the CPM (for consistency with delpix). Both setpix and delpix are still available for compatibility with other classes, but internally use setpixi and delpixi.
+
+	* src/CPM.js (updatebordernear) : modified to work with pixel index i rather than coordinates p, renamed to updateborderneari. 
+
+	* src/CPM.js (isViable) : modified to work with pixel index i rather than coordinates p. However, this function is currently not used and always returns true. 
+
+	* src/CPM.js (neigh) : commented out old functions to compute pixel neighborhood (neigh, neigh2D, and neigh3D), and replaced them with new functions that use pixel index instead of coordinates (neighi, neighi2D, neighi3D). This speeds up the CPM because much fewer conversions between pixel index and pixel coordinates are required, but is not compatible with the grid torus functionality (linked grid borders). This functionality has therefore been removed in this version (see other changes below).
+
+	* src/CPM.js (this.torus) : removed the torus functionality of the CPM (linked grid borders; see previous point for explanation). Instead, the outer pixels of every CPM are by default given a special "static" celltype (Stroma) that does not move and repels any cells that approach the grid border ( line this.addStromaBorder() ).
+
+	* src/CPM.js (addStromaBorder) : function added to add a stroma border to the CPM grid. All the outer pixels of the current grid will be converted to the stroma cellkind.
+
+	* src/CPM.js (fmodx,fmody,fmodz) : because of the removed torus functionality (see above), a modified modulus function is no longer required to compute pixel neighborhoods. This code has therefore been commented out, and fmodx, fmody, and fmodz now just return their input value.
+
+	* src/CPM.js (crossesBorder) : removed because this is no longer required without the torus option.
+
+	* src/CPM.js (monteCarloStep) : modified to work with pixel index i rather than coordinates p (no internal conversions anymore). Removed option of pohibiting copy attempts across the grid border (no longer necessary now the torus option is no longer supported). Simplified.
+
+	* src/CPM.js (neighC) : fixed bug in neighC2D and neighC3D (for computing neighborhoods for the connectivity constraint). 
+
+	* src/CPM.js (killCell) : removed (not used anymore).
+
+	* src/CPM.js (isViable) : removed (not used anymore without support of cell nucleus).
+
+	* src/DiceSet.js (general) : commented.
+
+	* src/CPMGridManipulator (general) : commented code. 
+
+	* src/CPMGridManipulator (doDivision2D) : Replaced the old getCenterOfMass() from the CPM object (no longer supported) with the new getCentroidOf() function from the CPMStats object. Moved the computation of the minimum volume (target volume of this cellkind minus 50 pixels) to the beginning so it is not repeated in the loop.
+
+	* src/CPMCanvas.js : commented.
+
+	* src/TrackCanvas.js : commented.
+
+	* src/CPMStats.js (general) : commented.
+
+	* src/CPMStats.js (getCentroids, centroids ) : created separate 2D and 3D functions (to avoid unnecessary 3rd coordinate for 2D simulations). Functions getCentroids() and centroids() are now wrappers that call the correct function depending on the grid dimensionality.
+
+	* src/CPMStats.js (getCentroidOf) : new function that computes the center of mass of a specific cell t. Wrapper calls either getCentroidOf2D or getCentroidOf3D depending on the dimensions of the grid. The output is an array with centroid coordinates - the same that was in the previous version returned by the old getCenterOfMass() function in CPM.js (which doesn't exist anymore).
+
+	* src/CPMStats.js (cellsOnNetwork) : changed to work with neighi/pixti instead of neigh/pixt in from the CPM class.
+
+	* src/CPMImageDumper.js : Removed. CPMCanvas does the same but better (supports both browser and node).
+
+	* examples-browser/basic-potts-model.html : some slight changes to make compatible with the stroma border that is now present around each grid. Updated conf of the CPM object and commented. 
+
+	* examples-browser/2d.html : Commented and removed obsolete parameters from conf. Added a few other visualization examples and used two different celltypes.
+
+	* examples-browser/single-amoeboid-cell.html : Commented and removed obsolete parameters from conf. Added track to the right.
+
+	* examples-node/run-2d.js : Removed obsolete parameters from conf. 
+
+	* examples-node/run-3d.js : fixed bug (conf had opt USE_CONNECTIVITY instead of LAMBDA_CONNECTIVITY, and Cstat.celltypeMap does not exist ). Added cells of two cellkinds (because parameters are also for two cellkinds). 
+
+
+

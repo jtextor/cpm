@@ -28,5 +28,7 @@ or
 
 The 2D script will dump binary snapshots of the CPM lattice into the folder `output/`. These can be converted to PNGs using the provided python script (which assumes a fixed lattice site of 200x200).
 
+The Makefile runs `run-2d.js` and generates png files and an mp4 movie automatically in the folder `output/`.
+
 
 

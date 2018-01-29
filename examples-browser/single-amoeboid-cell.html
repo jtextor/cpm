@@ -12,27 +12,32 @@
 var track_canvas, track_ctx, zoom = 2, C, Cim, Cstat, Ctracks
 
 function initialize(){
+	// CPM object
 	C = new CPM( 2, {x: 200, y:200}, {
 		LAMBDA_CONNECTIVITY : [0,0],
 		LAMBDA_P : [0,2],
 		LAMBDA_V : [0,50],
 		LAMBDA_ACT : [0,250],
-		LAMBDA_DIR : [0,0],
 		MAX_ACT : [0,25],
 		P : [0,340],
 		V : [0,500],
+		J_T_STROMA : [NaN,NaN],
 		J_T_ECM : [NaN,20],
 		J_T_T : [ [NaN,NaN], [NaN,100] ],
 		T : 20,
-		ACT_MEAN : "geometric",
-		TORUS: false
+		ACT_MEAN : "geometric"
 	})
 
+	// Create canvas, stats, and track object
 	Cim = new CPMCanvas( C, {zoom:zoom} )
 	Cstat = new CPMStats( C )
-	Ctracks = new TrackCanvas( Cstat, {zoom:zoom} )
 
-	C.seedCellAt( 1, [ 50, 50, 0 ] )
+	// Add second canvas to the right to draw tracks
+	Ctracks = new TrackCanvas( Cstat, {zoom:zoom} )
+	document.body.appendChild(Ctracks.el)
+
+	// Seed the cell
+	C.seedCellAt( 1, [ 50, 50 ] )
 
 	// burnin phase
 	for( i = 0 ; i < 50 ; i ++ ){
@@ -44,14 +49,19 @@ function initialize(){
 
 
 function timestep(){
-	C.monteCarloStep()
-	Cim.clear( "FFFFFF" )
 
+	// Update the grid with one MCS
+	C.monteCarloStep()
+
+	// Clear canvas (all pixels white, and draw stroma border)
+	Cim.clear( "FFFFFF" )
+	Cim.drawStroma( "AAAAAA" )
+
+	// Color cells in green and draw their activity values
 	Cim.drawCells( 1, "00FF00" )
-	//Cim.drawCellBorders( "000000" )
 	Cim.drawActivityValues( 1 )
 
-	Ctracks.drawTracks( Cim.context(), "000000", 0.5 )
+	Ctracks.drawTracks( "000000", 0.5 )
 	requestAnimationFrame( timestep )
 }
 </script>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>1-cell CPM</title>
+<title>4-cell 2D CPM</title>
 <meta charset="utf-8">
 <script type="text/javascript" src="../src/DiceSet.js"></script>
 <script type="text/javascript" src="../src/CPM.js"></script>
@@ -8,16 +8,21 @@
 <script type="text/javascript" src="../src/CPMCanvas.js"></script>
 <script type="text/javascript">
 
-var C,Cim,t=0
+
+/* An example 2D CPM with multiple cells of different kinds, and multiple
+visualizations. */
+
+
+var C,Cim,t=0, burnin_time=50, maxtime=1000
 
 function initialize(){
+
+	// Create a CPM object
 	C = new CPM( 2, {x: 400, y:400}, {
 		LAMBDA_CONNECTIVITY : [0,0,0],
-		FRC_BOOST : [0,3,0],
 		LAMBDA_P : [0,2,1],
 		LAMBDA_V : [0,50,50],
 		LAMBDA_ACT : [0,140,0],
-		LAMBDA_DIR : [0,0,200],
 		MAX_ACT : [0,40,0],
 		P : [0,340,100],
 		V : [0,500,100],
@@ -27,27 +32,48 @@ function initialize(){
 		T : 20,
 		ACT_MEAN : "geometric" 
 	})
-		
+
+	// Create a canvas to draw on
 	Cim = new CPMCanvas( C )
 
-	for( i = 0 ; i < 4 ; i ++ ){
-		C.seedCell()
+	// Seed two cells of each type
+	for( i = 0 ; i < 2 ; i ++ ){
+		C.seedCell( 1 )
+		C.seedCell( 2 )
 	}
 
-	// burnin phase
-	for( i = 0 ; i < 50 ; i ++ ){
+	// Burnin phase: only start drawing after the first burnin_time MCS
+	// (because cells need to increase their volume first)
+	for( i = 0 ; i < burnin_time ; i ++ ){
 		C.monteCarloStep()
 	}
-
+	
+	// simulation
 	timestep()
 }
 
-
+// Continue until the maximum simulation time is reached. 
 function timestep(){
+
+	// Update the grid with one MCS
 	C.monteCarloStep()
+
+	// Clear the canvas (white), and draw the stroma border in gray
 	Cim.clear( "FFFFFF" )
+	Cim.drawStroma( "AAAAAA" )
+
+	// Draw celltype 1 black with activity values
+	Cim.drawCells( 1, "000000")
+	Cim.drawActivityValues( 1 )
+
+	// Draw celltype 2 in red
+	Cim.drawCells( 2, "FF0000")
+
+	// Draw the borders of each cell
 	Cim.drawCellBorders()
-	if( t++ < 1000 ){
+
+
+	if( t++ < maxtime ){
 		requestAnimationFrame( timestep )
 	}
 }
