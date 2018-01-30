@@ -9,15 +9,20 @@
 <script type="text/javascript" src="../src/TrackCanvas.js"></script>
 <script type="text/javascript">
 
+/* Example of a basic CPM with only the adhesion term in the Hamiltonian*/
+
 var track_canvas, track_ctx, zoom = 2, C, Cim, Cstat, Ctracks,
 	cid = 0
 
 function seedGrid(){
+	// Create a cell (other than background)
 	if( !cid || !C.getVolume(cid) ){
-		cid = C.seedCellAt( 1, [1,1,0] )
+		cid = C.seedCellAt( 1, [2,2,0] )
 	}
-	for( var i = 0 ; i < C.field_size.x ; i ++ ){
-		for( var j = 0 ; j < C.field_size.y ; j ++ ){	
+	// For all non-stromaborder pixels in the grid: assign it randomly
+	// to either background or cell.
+	for( var i = 1 ; i < C.field_size.x ; i ++ ){
+		for( var j = 1 ; j < C.field_size.y ; j ++ ){	
 			if( Math.random() < 0.49 ){
 				C.setpix( [ i, j, 0 ], cid )
 			} else {
@@ -31,34 +36,46 @@ function seedGrid(){
 
 
 function initialize(){
+	// Create a new CPM, canvas, and stats object
 	C = new CPM( 2, {x: 90, y:90}, {
 		LAMBDA_CONNECTIVITY : [0,0],
 		LAMBDA_P : [0,0],
 		LAMBDA_V : [0,0],
-		LAMBDA_ACT : [0,250],
-		LAMBDA_DIR : [0,0],
+		LAMBDA_ACT : [0,0],
 		MAX_ACT : [0,0],
 		P : [0,700],
 		V : [0,1000],
+		J_T_STROMA : [NaN,100],
 		J_T_ECM : [NaN,20],
 		J_T_T : [ [NaN,NaN], [NaN,100] ],
 		T : 0.01,
-		ACT_MEAN : "geometric",
-		TORUS: false
+		ACT_MEAN : "geometric"
 	})
-	//seedGrid()
 	Cim = new CPMCanvas( C, {zoom:zoom} )
 	Cstat = new CPMStats( C )
+
+	// Start simulation
 	timestep()
 }
 
 
 function timestep(){
+
+	// Update the grid with one MCS
 	C.monteCarloStep()
+
+	// Clear the canvas (in the backgroundcolor white), and redraw:
 	Cim.clear( "FFFFFF" )
+
+	// stroma cells in gray
+	Cim.drawStroma( "AAAAAA" )
+
+	// The cell in red
 	Cim.drawCells( 1, "AA0000" )
 	var vol = C.getVolume(cid)
-	if( vol==1 || vol==C.field_size.x*C.field_size.y ){
+
+	// If either the background or cell disappears: re-seed the grid randomly.
+	if( vol==1 || vol==(C.field_size.x-1)*(C.field_size.y-1) ){
 		seedGrid()
 	}
 	requestAnimationFrame( timestep )
