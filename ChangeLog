@@ -1,4 +1,8 @@
 2018-01-29 Inge Wortel <ingewortel@gmail.com>
+	
+	* src/CPMStats.js (centroids2D,centroids3D) : fixed eslint no-console error.
+
+2018-01-29 Inge Wortel <ingewortel@gmail.com>
 
 	* ChangeLog : created.
 

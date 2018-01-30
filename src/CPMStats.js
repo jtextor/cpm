@@ -110,6 +110,7 @@ CPMStats.prototype = {
 				cz += cp[tx[i]][j][2]
 			}
 			cx /= j; cy /= j ; cz /= j
+			// eslint-disable-next-line no-console
 			console.log( tx[i] +"\t"+ 
 				this.C.time +"\t"+
 				this.C.time +"\t"+
@@ -128,6 +129,7 @@ CPMStats.prototype = {
 				cy += cp[tx[i]][j][1]
 			}
 			cx /= j; cy /= j 
+			// eslint-disable-next-line no-console
 			console.log( tx[i] +"\t"+ 
 				this.C.time +"\t"+
 				this.C.time +"\t"+
