@@ -1,3 +1,15 @@
+2018-02-28 Inge Wortel <ingewortel@gmail.com>
+
+	* src/CPMStats.js (getCentroids, getCentroidOf, centroids) : replaced separate 2D/3D functions with a single function. getCentroids and centroid now call getCentroidOf internally.
+
+	* src/CPMStats.js (updateOnline, newOnline, cellStats) : new functions to compute mean and variance of pixel coordinates in a given dimension (0,1,2 for x,y,z).
+
+	* src/CPMStats.js (getLengthOf, getRangeOf) : new functions to compute the length of a cell in a given dimension. getLengthOf actually returns the variance (a little more robust); getRangeOf returns the distance between the outer pixels in a given dimension.
+
+	* src/CPMCanvas.js (this.wrap) : an array "wrap" can now be passed to options, useful for displaying large grids. The grid is displayed as a smaller grid of size "wrap" with linked borders (using modulo operations on the coordinates). If left unspecified, this.wrap is [0,0,0] -- indicating no wrapping in x,y,and z dimensions. See also this.i2p (below).
+
+	* src/CPMCanvas.js (this.i2p) : replaces this.C.i2p to compute pixel coordinates for drawing. this.i2p also implements modulo operations for wrapping (see above), to convert grid coordinates to the coordinates on the smaller grid.
+
 2018-01-29 Inge Wortel <ingewortel@gmail.com>
 	
 	* src/CPMStats.js (centroids2D,centroids3D) : fixed eslint no-console error.

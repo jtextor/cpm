@@ -5,6 +5,8 @@ function CPMCanvas( C, options ){
 	this.C = C
 	this.zoom = (options && options.zoom) || 1
 
+	this.wrap = (options && options.wrap) || [0,0,0]
+
 	if( typeof document !== "undefined" ){
 		this.el = document.createElement("canvas")
 		this.el.width = C.field_size.x*this.zoom
@@ -64,6 +66,16 @@ CPMCanvas.prototype = {
 		return this.ctx
 	},
 
+	i2p : function( i ){
+		var p = this.C.i2p( i ), dim
+		for( dim = 0; dim < p.length; dim++ ){
+			if( this.wrap[dim] != 0 ){
+				p[dim] = p[dim] % this.wrap[dim]
+			}
+		}
+		return p
+	},
+
 	/* DRAWING FUNCTIONS ---------------------- */
 
 	/* Use to draw the border of each cell on the grid in the color specified in "col"
@@ -71,7 +83,7 @@ CPMCanvas.prototype = {
 	outer pixels)*/
 	drawCellBorders : function( col ){
 		col = col || "000000"
-		var p, pc, pu, pd, pl, pr, i
+		var p, pc, pu, pd, pl, pr, i, pdraw
 		this.col( col )
 		this.ctx.fillStyle="#"+col
 
@@ -79,22 +91,23 @@ CPMCanvas.prototype = {
 		var cst =  this.C.cellborderpixels.elements
 		for( i = 0 ; i < cst.length ; i ++ ){
 			p = this.C.i2p( cst[i] )
+			pdraw = this.i2p( cst[i] )
 			pc = this.C.pixt( [p[0],p[1],0] )
 			pr = this.C.pixt( [p[0]+1,p[1],0] )
 			pl = this.C.pixt( [p[0]-1,p[1],0] )		
 			pd = this.C.pixt( [p[0],p[1]+1,0] )
 			pu = this.C.pixt( [p[0],p[1]-1,0] )
 			if( pc != pl  ){
-				this.pxdrawl( p )
+				this.pxdrawl( pdraw )
 			}
 			if( pc != pr ){
-				this.pxdrawr( p )
+				this.pxdrawr( pdraw )
 			}
 			if( pc != pd ){
-				this.pxdrawd( p )
+				this.pxdrawd( pdraw )
 			}
 			if( pc != pu ){
-				this.pxdrawu( p )
+				this.pxdrawu( pdraw )
 			}
 		}
 	},
@@ -124,7 +137,7 @@ CPMCanvas.prototype = {
 					} else {
 						this.col( tohex(2*a)+"FF00" )
 					} 
-					this.pxf( this.C.i2p( ii ) )
+					this.pxf( this.i2p( ii ) )
 				}
 			}
 		}
@@ -136,7 +149,7 @@ CPMCanvas.prototype = {
 		this.ctx.fillStyle="#"+col
 		var cst =  this.C.cellborderpixels.elements, i
 		for( i = 0 ; i < cst.length ; i ++ ){
-			this.pxf( this.C.i2p( cst[i] ) )
+			this.pxf( this.i2p( cst[i] ) )
 		}
 	},
 
@@ -150,7 +163,7 @@ CPMCanvas.prototype = {
 		var cst = Object.keys( this.C.cellpixelstype ), i
 		for( i = 0 ; i < cst.length ; i ++ ){
 			if( this.C.cellKind(this.C.cellpixelstype[cst[i]]) == kind ){
-				this.pxf( this.C.i2p( cst[i] ) )
+				this.pxf( this.i2p( cst[i] ) )
 			}
 		}
 	},
@@ -164,7 +177,7 @@ CPMCanvas.prototype = {
 		// pixel index of all stroma pixels.
 		var cst = Object.keys( this.C.stromapixelstype ), i
 		for( i = 0 ; i < cst.length ; i ++ ){
-			this.pxf( this.C.i2p( cst[i] ) )
+			this.pxf( this.i2p( cst[i] ) )
 		}
 	},
 
