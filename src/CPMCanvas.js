@@ -6,17 +6,26 @@ function CPMCanvas( C, options ){
 	this.zoom = (options && options.zoom) || 1
 
 	this.wrap = (options && options.wrap) || [0,0,0]
+	this.width = this.wrap[0]
+	this.height = this.wrap[1]
+
+	if( this.width == 0 || this.C.field_size.x < this.width ){
+		this.width = this.C.field_size.x
+	}
+	if( this.height == 0 || this.C.field_size.y < this.height ){
+		this.height = this.C.field_size.y
+	}
 
 	if( typeof document !== "undefined" ){
 		this.el = document.createElement("canvas")
-		this.el.width = C.field_size.x*this.zoom
-		this.el.height = C.field_size.y*this.zoom
+		this.el.width = this.width*this.zoom
+		this.el.height = this.height*this.zoom//C.field_size.y*this.zoom
 		var parent_element = (options && options.parentElement) || document.body
 		parent_element.appendChild( this.el )
 	} else {
 		var Canvas = require("canvas")
-		this.el = new Canvas( C.field_size.x*this.zoom,
-			C.field_size.y*this.zoom )
+		this.el = new Canvas( this.width*this.zoom,
+			this.height*this.zoom )
 		this.fs = require("fs")
 	}
 

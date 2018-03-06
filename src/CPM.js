@@ -26,8 +26,8 @@ function CPM( ndim, field_size, conf ){
 
 		this.field_size.z = 1			// for compatibility
 		this.midpoint = 			// middle pixel in the grid.
-		[ 	Math.round(this.field_size.x/2),
-			Math.round(this.field_size.y/2) ] //,0 ]
+		[ 	Math.round((this.field_size.x-1)/2),
+			Math.round((this.field_size.y-1)/2) ] //,0 ]
 
 	} else {
 	
@@ -41,21 +41,21 @@ function CPM( ndim, field_size, conf ){
 		this.i2p = this.i2p3D			// converts pixel ID to coordinates
 
 		this.midpoint = 
-		[	Math.round(this.field_size.x/2),
-			Math.round(this.field_size.y/2),
-			Math.round(this.field_size.z/2) ]
+		[	Math.round((this.field_size.x-1)/2),
+			Math.round((this.field_size.y-1)/2),
+			Math.round((this.field_size.z-1)/2) ]
 	}
 
 
 	// Check that the grid size is not too big to store pixel ID in 32-bit number,
 	// and allow fast conversion of coordinates to unique ID numbers.
-	this.X_BITS = 1+Math.ceil( Math.log2( this.field_size.x ) )
+	this.X_BITS = 1+Math.floor( Math.log2( this.field_size.x - 1 ) )
 	this.X_MASK = (1 << this.X_BITS)-1 
 
-	this.Y_BITS = 1+Math.ceil( Math.log2( this.field_size.y ) )
+	this.Y_BITS = 1+Math.floor( Math.log2( this.field_size.y - 1 ) )
 	this.Y_MASK = (1 << this.Y_BITS)-1
 
-	this.Z_BITS = 1+Math.ceil( Math.log2( this.field_size.z ) )
+	this.Z_BITS = 1+Math.floor( Math.log2( this.field_size.z - 1 ) )
 	this.Z_MASK = (1 << this.Z_BITS)-1
 
 	this.dy = 1 << this.Y_BITS // for neighborhoods based on pixel index
@@ -95,7 +95,7 @@ function CPM( ndim, field_size, conf ){
 	
 	// (For function: see below.) By default the borders of the grid are set to stroma,
 	// which prevents the cell from moving out of the grid.
-	this.addStromaBorder()
+	//this.addStromaBorder()
 }
 
 CPM.prototype = {
@@ -826,6 +826,10 @@ CPM.prototype = {
 
 	/* ------------- MANIPULATING CELLS ON THE GRID --------------- */
 
+	newDice : function(){
+		return new DiceSet()
+	},
+
 	/* Initiate a new cellid for a cell of celltype "kind", and create elements
 	   for this cell in the relevant arrays (cellvolume, cellperimeter, t2k).*/
 	makeNewCellID : function( kind ){
@@ -911,14 +915,63 @@ CPM.prototype = {
 			this.stromapixelstype[this.p2i( stromavoxels[i] )]=stromatype
 		}
 	},
+	// Adds a plane of stroma pixels at coord x/y/z (coded by 0,1,2) value [coordvalue],
+	// by letting the other coordinates range from their min value 0 to their max value.
+	addStromaPlane : function( stromavoxels, coord, coordvalue, stromatype ){
+		var x,y,z
+		var minc = [0,0,0]
+		var maxc = [this.field_size.x-1, this.field_size.y-1, this.field_size.z-1]
+		minc[coord] = coordvalue
+		maxc[coord] = coordvalue
+
+
+		// the celltype used for stroma is default -1.
+		if( arguments.length < 4 ){
+			stromatype = -1
+		}
+
+		// For every coordinate x,y,z, loop over all possible values from min to max.
+		// one of these loops will have only one iteration because min = max = coordvalue.
+		for( x = minc[0]; x <= maxc[0]; x++ ){
+			for( y = minc[1]; y<=maxc[1]; y++ ){
+				for( z = minc[2]; z<=maxc[2]; z++ ){
+					if( this.ndim == 3 ){
+						stromavoxels.push( [x,y,z] )	
+					} else {
+						//console.log(x,y)
+						stromavoxels.push( [x,y] )
+					}
+				}
+			}
+		}
+
+		
+		return stromavoxels;
+	},
+
 	addStromaBorder : function( stromatype ){
 		var stromavoxels = [], i
-		var x = this.field_size.x, y = this.field_size.y, z = this.field_size.z
+		var x = this.field_size.x-1, y = this.field_size.y-1, z = this.field_size.z-1
 
 		// the celltype used for stroma is default -1.
 		if( arguments.length < 1 ){
 			stromatype = -1
 		}
+		
+		// depending on ndim
+		stromavoxels = this.addStromaPlane( stromavoxels, 0, 0, stromatype )
+		stromavoxels = this.addStromaPlane( stromavoxels, 0, x, stromatype )
+		stromavoxels = this.addStromaPlane( stromavoxels, 1, 0, stromatype )
+		stromavoxels = this.addStromaPlane( stromavoxels, 1, y, stromatype )
+		if( this.ndim == 3 ){
+			stromavoxels = this.addStromaPlane( stromavoxels, 2, 0, stromatype )
+			stromavoxels = this.addStromaPlane( stromavoxels, 2, z, stromatype )
+		}
+
+
+
+
+		/*
 		// borders in x direction
 		for( i = 0 ; i <= x; i ++ ){
 			stromavoxels.push( [ i, 0, 0 ] )
@@ -940,7 +993,8 @@ CPM.prototype = {
 			stromavoxels.push( [ 0, y-1, i ] )
 			stromavoxels.push( [ x-1, y-1, i ] )
 		}
-		
+		*/
+		//console.log( stromavoxels.length )
 		this.addStroma( stromavoxels, stromatype )
 	},
 

@@ -1,3 +1,12 @@
+2018-03-06 Inge Wortel <ingewortel@gmail.com>
+
+	* src/CPM.js : adjusted the computation of X_BITS, Y_BITS, Z_BITS (number of bits was higher than necessary, which limited the possible grid size in 3D too much). Turned off the default generation of a stroma border.
+
+	* src/CPM.js ( addStromaBorder ) : this implementation did not work for 3D (produced stroma lines instead of planes at the grid border, so no real barrier for the cells). Instead, this now uses a new function addStromaPlane.
+
+	* src/CPMCanvas.js : changed the generation of the canvas in the html document so that its size depends on the field size and the wrap option (before, only the drawing of cells was wrapped, but not the canvas itself).
+
+
 2018-02-28 Inge Wortel <ingewortel@gmail.com>
 
 	* src/CPMStats.js (getCentroids, getCentroidOf, centroids) : replaced separate 2D/3D functions with a single function. getCentroids and centroid now call getCentroidOf internally.
