@@ -395,9 +395,9 @@ CPM.prototype = {
 	-1 if the angle is 180 (when directions are opposite), and 0 when directions are
 	perpendicular. */
 	pointAttractor : function( p1, p2, pt ){
-		var r = 0., i = 0, norm1 = 0, norm2 = 0, d1=0., d2=0.
-		for( ; i < p1.length ; i ++ ){
-			d1 = p1[i]-pt[i]; d2 = p2[i]-p1[i]
+		var r = 0., i, norm1 = 0, norm2 = 0, d1=0., d2=0.
+		for( i=0 ; i < p1.length ; i ++ ){
+			d1 = pt[i]-p1[i]; d2 = p2[i]-p1[i]
 			r += d1 * d2
 			norm1 += d1*d1
 			norm2 += d2*d2
