@@ -1,3 +1,7 @@
+2018-03-15 Inge Wortel <ingewortel@gmail.com>
+	* src/CPM.js (pointAttractor) : small adjustment in pointAttractor
+	* src/CPMchemotaxis.js : added new class to extend the CPM with a chemokine gradient.
+
 2018-03-06 Inge Wortel <ingewortel@gmail.com>
 
 	* src/CPM.js : adjusted the computation of X_BITS, Y_BITS, Z_BITS (number of bits was higher than necessary, which limited the possible grid size in 3D too much). Turned off the default generation of a stroma border.
