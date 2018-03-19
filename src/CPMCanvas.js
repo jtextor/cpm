@@ -12,8 +12,8 @@ function CPMCanvas( C, options ){
 		var parent_element = (options && options.parentElement) || document.body
 		parent_element.appendChild( this.el )
 	} else {
-		var Canvas = require("canvas")
-		this.el = new Canvas( C.field_size.x*this.zoom,
+		const {createCanvas} = require("canvas")
+		this.el = createCanvas( C.field_size.x*this.zoom,
 			C.field_size.y*this.zoom )
 		this.fs = require("fs")
 	}
