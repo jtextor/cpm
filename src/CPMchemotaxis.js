@@ -1,6 +1,7 @@
 /** This extends the CPM from CPM.js with a chemotaxis module. 
-Can be used for two- or three-dimensional simulations. 
-	Usable from browser and node.js.
+Can be used for two- or three-dimensional simulations, but visualization
+is currently supported only in 2D. 
+Currently usable from browser only.
 */
 
 
@@ -210,59 +211,6 @@ CPM.prototype.monteCarloStep = function(){
 
 		this.time++ // update time with one MCS.
 }
-
-
-/* ------------------ CANVAS --------------------------------------- */
-
-CPMCanvas.prototype.setopacity = function( alpha ){
-	this.ctx.globalAlpha = alpha
-}
-
-CPMCanvas.prototype.chemokineIntensity = function( p ){
-
-	var gradienttype = this.C.conf["GRADIENT_TYPE"]
-	var gradientvec = this.C.conf["GRADIENT_DIRECTION"]
-
-	if( gradienttype == "linear" ){
-		var gmax = gradientvec[0]*this.C.field_size.x + gradientvec[1]*this.C.field_size.y
-		var gval = 0.0 + (gradientvec[0]*p[0]) + ( gradientvec[1]*p[1] )
-		return( gval/gmax )
-	} else if( gradienttype == "radial" ){
-		var maxx = gradientvec[0], maxy = gradientvec[1]
-		if( this.C.field_size.x - maxx > maxx ){
-			maxx = this.C.field_size.x - maxx
-		}
-		if( this.C.field_size.y - maxy > maxy ){
-			maxy = this.C.field_size.y - maxy
-		}
-		var distx = p[0] - gradientvec[0], disty = p[1] - gradientvec[1]
-		var gmax = Math.sqrt( maxx*maxx + maxy*maxy )
-		var gval = 0.0 + Math.sqrt( distx*distx + disty*disty )
-
-	} else {
-		throw("Unknown gradienttype")
-	}
-	return (1-gval/gmax)
-}
-CPMCanvas.prototype.drawChemokineGradient = function( col ){
-
-	var i,j,alpha
-	col = col || "000000"
-	this.col( col )
-
-	for( i = 0; i < this.C.field_size.x; i++ ){
-		for( j = 0; j < this.C.field_size.y; j++ ){
-			alpha = 1*this.chemokineIntensity( [i,j] )
-			this.setopacity( alpha*alpha )
-
-			
-			this.pxf( [i,j] )
-		}
-	}
-	this.setopacity( 1 )
-
-}
-
 
 
 /* This allows using the code in either the browser or with nodejs. */
