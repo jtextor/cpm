@@ -96,6 +96,61 @@ CPMStats.prototype = {
 		return( maxc - minc )		
 
 	},
+	//
+	getConnectedComponentOfCell : function( t, cellindices ){
+		if( cellindices.length == 0 ){ return }
+
+		var visited = {}, k=1, volume = {}, myself = this
+
+		var labelComponent = function(seed, k){
+			var q = [parseInt(seed)]
+			visited[q[0]] = 1
+			volume[k] = 0
+			while( q.length > 0 ){
+				var e = parseInt(q.pop())
+				volume[k] ++
+				var ne = myself.C.neighi( e )
+				for( var i = 0 ; i < ne.length ; i ++ ){									if( myself.C.pixti( ne[i] ) == t &&
+						!visited.hasOwnProperty(ne[i]) ){
+						q.push(ne[i])
+						visited[ne[i]]=1
+					}
+				}
+			}
+		}
+
+		for( var i = 0 ; i < cellindices.length ; i ++ ){
+			if( !visited.hasOwnProperty( cellindices[i] ) ){
+				labelComponent( cellindices[i], k )
+				k++
+			}
+		}
+
+		return volume
+	},
+	getConnectedComponents : function(){
+		var cpi = this.cellpixelsi()
+		var tx = Object.keys( cpi ), i, volumes = {}
+		for( i = 0 ; i < tx.length ; i ++ ){
+			volumes[tx[i]] = this.getConnectedComponentOfCell( tx[i], cpi[tx[i]] )
+		}
+		return volumes
+	},
+	// Compute probabilities that two pixels taken at random come from the same cell.
+	getConnectedness : function(){
+		var v = this.getConnectedComponents(), s = {}, r = {}, i, j
+		for( i in v ){
+			s[i] = 0
+			r[i] = 0
+			for( j in v[i] ){
+				s[i] += v[i][j]
+			}
+			for( j in v[i] ){
+				r[i] += (v[i][j]/s[i]) * (v[i][j]/s[i])
+			}
+		}
+		return r
+	},
 	// center of mass of cell t
 	// the cellpixels object can be given as the second argument
 	getCentroidOf : function( t ){
@@ -175,7 +230,21 @@ CPMStats.prototype = {
 			cp[t].push( this.C.i2p( px[i] ) )
 		}
 		return cp
-	}
+	},
+
+	cellpixelsi : function(){
+		var cp = {}
+		var px = Object.keys( this.C.cellpixelstype ), t, i
+		for( i = 0 ; i < px.length ; i ++ ){
+			t = this.C.cellpixelstype[px[i]]
+			if( !(t in cp ) ){
+				cp[t] = []
+			}
+			cp[t].push( px[i] )
+		}
+		return cp
+ 	}
+ 	
 }
 
 

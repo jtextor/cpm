@@ -1,3 +1,9 @@
+2018-03-20 Inge Wortel <ingewortel@gmail.com>
+	* src/CPMCanvas.js : small change in creating canvas in line with commit in jtextor
+	* src/CPMStats.js : Added functions from jtextor to compute "connectedness" of the cell
+	* examples-node/run-2d.js : now logs connectedness to the console.
+
+
 2018-03-15 Inge Wortel <ingewortel@gmail.com>
 	* src/CPM.js (pointAttractor) : small adjustment in pointAttractor
 	* src/CPMchemotaxis.js : added new class to extend the CPM with a chemokine gradient.
