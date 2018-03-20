@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Chemokine gradient</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="../src/DiceSet.js"></script>
+<script type="text/javascript" src="../src/CPM.js"></script>
+<script type="text/javascript" src="../src/CPMStats.js"></script>
+<script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript" src="../src/CPMchemotaxis.js"></script>
+<script type="text/javascript" src="../src/BGCanvas.js"></script>
+<script type="text/javascript">
+
+
+/* An example 2D CPM with multiple cells of different kinds, and multiple
+visualizations. */
+
+
+var C,Cim,t=0, burnin_time=100, runtime=10000, zoom=2, wrap=[0,0]
+
+function initialize(){
+
+	// Create a CPM object
+	C = new CPM( 2, {x: 400, y:200}, {
+		LAMBDA_CHEMOTAXIS : [0,30],
+		LAMBDA_CONNECTIVITY : [0,0],
+		LAMBDA_P : [0,2],
+		LAMBDA_V : [0,30],
+		LAMBDA_ACT : [0,50],
+		MAX_ACT : [0,40],
+		P : [0,260],
+		V : [0,500],
+		J_T_STROMA : [NaN,15],
+		J_T_ECM : [NaN,20],
+		J_T_T : [ [NaN,NaN], [NaN,100] ],
+		T : 20,
+		ACT_MEAN : "geometric",
+		GRADIENT_TYPE : "linear",
+		GRADIENT_DIRECTION : [1,0]
+	})
+
+	// Create a canvas to draw on
+	Cim = new CPMCanvas( C, {zoom:zoom, wrap:wrap} )
+	Cimgradient = new BGCanvas( C, {zoom:zoom, wrap:wrap} )
+	Cimgradient.drawChemokineGradient( "0061ff" )
+	C.addStromaBorder()
+	C.stop = false
+
+
+	
+	// simulation
+	startsim()
+}
+
+function startsim(){
+	// Seed cell
+	for( i = 0 ; i < 2 ; i ++ ){
+		C.seedCellAt( 1, [50,100] )
+	}
+
+	// Burnin phase: only start drawing after the first burnin_time MCS
+	// (because cells need to increase their volume first)
+	for( i = 0 ; i < burnin_time ; i ++ ){
+		C.monteCarloStep()
+	}
+	timestep()
+}
+
+// Continue until the maximum simulation time is reached. 
+function timestep(){
+
+	// Update the grid with one MCS
+	C.monteCarloStep()
+
+	// Clear the canvas (white),add gradient, and draw the stroma border in gray
+	Cim.ctx.clearRect(0,0,this.Cim.el.width,this.Cim.el.height)
+	Cim.ctx.drawImage( Cimgradient.el,0,0)
+	Cim.drawStroma( "AAAAAA" )
+
+	// Draw celltype 1 black with activity values
+	Cim.drawCells( 1, "000000")
+	Cim.drawActivityValues( 1 )
+
+	// Draw the borders of each cell
+	Cim.drawCellBorders()
+
+	if( t++ < runtime && !C.stop ){
+		requestAnimationFrame( timestep )
+	}
+}
+
+function startSim(){
+	C.stop = false
+	timestep()
+}
+
+function stopSim(){
+	C.stop = true
+}
+
+function reset(){
+		stopSim()
+		// remove all cells from the grid, but keep stroma		
+		var cellpix1 = C.cellpixelstype, cellpix = Object.keys( cellpix1 ), i
+		for( i = 0; i < cellpix.length; i++ ){
+			if( cellpix1[i] != 0 ){
+				C.delpixi( cellpix[i] )
+			}
+		}
+		// Also remove the cellborderpixels
+		C.cellborderpixels = new DiceSet()
+	
+}
+
+
+
+</script>
+</script>
+<body onload="initialize()">
+
+<div>
+<button onclick="startSim()">start</button>
+<button onclick="stopSim()">stop</button>
+<button onclick="reset();startsim();timestep()">reset</button>
+<br><br>
+</div>
+<div class="slidecontainer">
+<table>
+<tr><td>Max<sub>Act</sub></td><td>
+0<input type="range" min="0" max="100" value="40" class="slider" id="maxact" 
+  oninput="C.conf.MAX_ACT[1]=this.value">100
+</td></tr>
+<tr><td>&lambda;<sub>Act</sub></td><td>
+0<input type="range" min="0" max="1000" value="200" class="slider" id="lambdaact" 
+  oninput="C.conf.LAMBDA_ACT[1]=this.value">1000
+</td></tr>
+<tr><td>&lambda;<sub>Chemotaxis</sub></td><td>
+0<input type="range" min="0" max="100" value="30" class="slider" id="lchem" 
+  oninput="C.conf.LAMBDA_CHEMOTAXIS[1]=this.value">100
+  </td></tr></table>
+</div>
+
+
+</body>
+</html>
+

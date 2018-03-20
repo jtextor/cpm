@@ -1,3 +1,9 @@
+2018-03-20 (2) Inge Wortel <ingewortel@gmail.com>
+	* src/BGCanvas.js : added special class to create a chemokine canvas to be copied
+	onto the CPMCanvas.
+	* src/CPMchemotaxis.js : instead of altering CPMCanvas, now use BGCanvas.
+	* examples-node/2d-chemokine.html : added example of chemotaxis
+
 2018-03-20 Inge Wortel <ingewortel@gmail.com>
 	* src/CPMCanvas.js : small change in creating canvas in line with commit in jtextor
 	* src/CPMStats.js : Added functions from jtextor to compute "connectedness" of the cell
