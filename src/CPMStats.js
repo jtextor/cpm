@@ -96,7 +96,7 @@ CPMStats.prototype = {
 		return( maxc - minc )		
 
 	},
-	//
+	// Compute connected components of the cell ( to check connectivity )
 	getConnectedComponentOfCell : function( t, cellindices ){
 		if( cellindices.length == 0 ){ return }
 
@@ -110,7 +110,8 @@ CPMStats.prototype = {
 				var e = parseInt(q.pop())
 				volume[k] ++
 				var ne = myself.C.neighi( e )
-				for( var i = 0 ; i < ne.length ; i ++ ){									if( myself.C.pixti( ne[i] ) == t &&
+				for( var i = 0 ; i < ne.length ; i ++ ){
+					if( myself.C.pixti( ne[i] ) == t &&
 						!visited.hasOwnProperty(ne[i]) ){
 						q.push(ne[i])
 						visited[ne[i]]=1
@@ -150,6 +151,28 @@ CPMStats.prototype = {
 			}
 		}
 		return r
+	},
+	// Compute percentage of pixels with activity > threshold
+	getPercentageActOfCell : function( t, cellindices, threshold ){
+		if( cellindices.length == 0 ){ return }
+		var i, count = 0
+
+		for( i = 0 ; i < cellindices.length ; i ++ ){
+			if( this.C.pxact( cellindices[i] ) > threshold ){
+				count++
+			}
+		}
+		return 100*(count/cellindices.length)
+	
+	},
+	getPercentageAct : function( threshold ){
+		var cpi = this.cellpixelsi()
+		var tx = Object.keys( cpi ), i, activities = {}
+		for( i = 0 ; i < tx.length ; i ++ ){
+			activities[tx[i]] = this.getPercentageActOfCell( tx[i], cpi[tx[i]], threshold )
+		}
+		return activities
+	
 	},
 	// center of mass of cell t
 	// the cellpixels object can be given as the second argument

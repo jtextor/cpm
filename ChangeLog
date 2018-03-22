@@ -1,3 +1,6 @@
+2018-03-22 Inge Wortel <ingewortel@gmail.com>
+	* src/CPMCanvas.js : added functions to compute percentage of active pixels in a cell.
+
 2018-03-20 Inge Wortel <ingewortel@gmail.com>
 	* src/CPMCanvas.js : small change in creating canvas in line with commit in jtextor
 	* src/CPMStats.js : Added functions from jtextor to compute "connectedness" of the cell
