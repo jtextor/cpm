@@ -1,6 +1,7 @@
 
 2018-03-22 Inge Wortel <ingewortel@gmail.com>
-	* src/CPMCanvas.js : added functions to compute percentage of active pixels in a cell.
+	* src/CPMStats.js : added functions to compute percentage of active pixels in a cell.
+	* src/CPMStats.js : added functions to compute order index of the act gradient in a cell.
 
 2018-03-20 (2) Inge Wortel <ingewortel@gmail.com>
 	* src/BGCanvas.js : added special class to create a chemokine canvas to be copied

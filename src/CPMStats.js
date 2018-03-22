@@ -240,6 +240,98 @@ CPMStats.prototype = {
 
 		}
 	},
+	
+	
+	// Computing an order index of the activity gradients within the cell.
+	getGradientAt : function( t, i ){
+	
+		var gradient = []
+		
+		// for computing index of neighbors in x,y,z dimension:
+		var diff = [1, this.C.dy, this.C.dz ] 
+		
+		var d, neigh1, neigh2, t1, t2, ai = this.C.pxact( i ), terms = 0
+		
+		for( d = 0; d < this.C.ndim; d++ ){
+			// get the two neighbors and their types
+			neigh1 = i - diff[d]
+			neigh2 = i + diff[d]
+			t1 = this.C.cellpixelstype[ neigh1 ]
+			t2 = this.C.cellpixelstype[ neigh2 ]
+			
+			// start with a zero gradient
+			gradient[d] = 0.00
+			
+			// we will average the difference with the left and right neighbor only if both
+			// belong to the same cell. If only one neighbor belongs to the same cell, we
+			// use that difference. If neither belongs to the same cell, the gradient
+			// stays zero.
+			if( t == t1 ){
+				gradient[d] += ( ai - this.C.pxact( neigh1 ) )
+				terms++
+			}
+			if( t == t2 ){
+				gradient[d] += ( this.C.pxact( neigh2 ) - ai )
+				terms++
+			}
+			if( terms != 0 ){
+				gradient[d] = gradient[d] / terms
+			}		
+						
+		}
+		
+		return gradient
+		
+	},
+	// compute the norm of a vector (in array form)
+	norm : function( v ){
+		var i
+		var norm = 0
+		for( i = 0; i < v.length; i++ ){
+			norm += v[i]*v[i]
+		}
+		norm = Math.sqrt( norm )
+		return norm
+	},
+	getOrderIndexOfCell : function( t, cellindices ){
+	
+		if( cellindices.length == 0 ){ return }
+		
+		// create an array to store the gradient in. Fill it with zeros for all dimensions.
+		var gradientsum = [], d
+		for( d = 0; d < this.C.ndim; d++ ){
+			gradientsum.push(0.0)
+		}
+		
+		// now loop over the cellindices and add gi/norm(gi) to the gradientsum for each
+		// non-zero local gradient:
+		var j
+		for( j = 0; j < cellindices.length; j++ ){
+			var g = this.getGradientAt( t, cellindices[j] )
+			var gn = this.norm( g )
+			// we only consider non-zero gradients for the order index
+			if( gn != 0 ){
+				for( d = 0; d < this.C.ndim; d++ ){
+					gradientsum[d] += g[d]/gn
+				}
+			}
+		}
+		
+		
+		// finally, return the norm of this summed vector
+		var orderindex = this.norm( gradientsum )
+		return orderindex	
+	},
+	getOrderIndices : function( ){
+		var cpi = this.cellpixelsi()
+		var tx = Object.keys( cpi ), i, orderindices = {}
+		for( i = 0 ; i < tx.length ; i ++ ){
+			orderindices[tx[i]] = this.getOrderIndexOfCell( tx[i], cpi[tx[i]] )
+		}
+		return orderindices
+	
+	},
+	
 	// returns an object with a key for each celltype (identity). 
 	// The corresponding value is an array of pixel coordinates per cell.
 	cellpixels : function(){
