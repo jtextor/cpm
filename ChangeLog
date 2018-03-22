@@ -1,5 +1,12 @@
+
 2018-03-22 Inge Wortel <ingewortel@gmail.com>
 	* src/CPMCanvas.js : added functions to compute percentage of active pixels in a cell.
+
+2018-03-20 (2) Inge Wortel <ingewortel@gmail.com>
+	* src/BGCanvas.js : added special class to create a chemokine canvas to be copied
+	onto the CPMCanvas.
+	* src/CPMchemotaxis.js : instead of altering CPMCanvas, now use BGCanvas.
+	* examples-node/2d-chemokine.html : added example of chemotaxis
 
 2018-03-20 Inge Wortel <ingewortel@gmail.com>
 	* src/CPMCanvas.js : small change in creating canvas in line with commit in jtextor

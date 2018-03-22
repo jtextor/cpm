@@ -1,6 +1,7 @@
 /** This extends the CPM from CPM.js with a chemotaxis module. 
-Can be used for two- or three-dimensional simulations. 
-	Usable from browser and node.js.
+Can be used for two- or three-dimensional simulations, but visualization
+is currently supported only in 2D. 
+Currently usable from browser only.
 */
 
 
@@ -68,17 +69,17 @@ CPM.prototype.deltaHchemotaxis = function( sourcei, targeti, src_type, tgt_type 
 		lambdachem = this.par("LAMBDA_CHEMOTAXIS",tgt_type )
 	}	
 
-	return bias*lambdachem
+	return -bias*lambdachem
 }
 
 
 /* ------------------ HAMILTONIAN COMPUTATION ------------------------------ */
 
-CPM.prototype.deltaHadhesion = function( targeti, src_type, tgt_type ){
+CPM.prototype.deltaHadhesion = function( sourcei, targeti, src_type, tgt_type ){
 	return this.H( targeti, src_type ) - this.H( targeti, tgt_type )
 }
 
-CPM.prototype.deltaHvolume = function( src_type, tgt_type ){
+CPM.prototype.deltaHvolume = function( sourcei, targeti, src_type, tgt_type ){
 
 	// volume gain of src cell
 	var deltaH = this.volconstraint( 1, src_type ) - 
@@ -93,7 +94,7 @@ CPM.prototype.deltaHvolume = function( src_type, tgt_type ){
 
 // invasiveness. If there is a celltype a that prefers to invade
 // pixels of type b. Currently not used.
-CPM.prototype.deltaHinvasiveness = function( src_type, tgt_type ){
+CPM.prototype.deltaHinvasiveness = function( sourcei, targeti, src_type, tgt_type ){
 	var deltaH = 0	
 	if( tgt_type != 0 && src_type != 0 && this.conf.INV ){
 		deltaH += this.par( "INV", tgt_type, src_type )
@@ -101,6 +102,9 @@ CPM.prototype.deltaHinvasiveness = function( src_type, tgt_type ){
 	return -deltaH
 }
 
+CPM.prototype.deltaHperimeter = function( sourcei, targeti, src_type, tgt_type ){
+	return this.perconstrainti( targeti, tgt_type, src_type )
+}
 CPM.prototype.deltaHactmodel = function( sourcei, targeti, src_type, tgt_type ){
 
 	var deltaH = 0
@@ -126,6 +130,23 @@ CPM.prototype.deltaHactmodel = function( sourcei, targeti, src_type, tgt_type ){
 // returns both change in hamiltonian and perimeter
 CPM.prototype.deltaH = function( sourcei, targeti, src_type, tgt_type ){
 
+	var terms = ["adhesion","volume","perimeter","actmodel","chemotaxis"], currentterm
+	var dHlog = {}, per
+	
+	var r = 0.0
+	for( var i = 0 ; i < terms.length ; i++ ){
+		currentterm = this["deltaH"+terms[i]].call( this,sourcei,targeti,src_type,tgt_type )
+		if( terms[i]=="perimeter"){
+			r+=currentterm.r
+			per = currentterm
+			dHlog[terms[i]] = currentterm.r
+		} else {
+			r += currentterm
+			dHlog[terms[i]] = currentterm
+		}
+		
+	}
+	/*
 	var adhesion = this.deltaHadhesion( targeti, src_type, tgt_type )
 	var volume = this.deltaHvolume( src_type, tgt_type )
 	var per = this.perconstrainti( targeti, tgt_type, src_type )
@@ -134,14 +155,15 @@ CPM.prototype.deltaH = function( sourcei, targeti, src_type, tgt_type ){
 	var act = this.deltaHactmodel( sourcei, targeti, src_type, tgt_type )
 	var conn = this.connectivityConstraint( targeti, tgt_type, src_type )
 	var chemotaxis = this.deltaHchemotaxis( sourcei, targeti, src_type, tgt_type )
-
+	*/
 	if( ( this.logterms || 0 ) && this.time % 100 == 0 ){
-		console.log( {adh: adhesion, vol: volume, p: per.r, inv: invn, act: act, conn:conn, chem: chemotaxis } )
+		//console.log( {adh: adhesion, vol: volume, p: per.r, inv: invn, act: act, conn:conn, chem: chemotaxis } )
+		console.log( dHlog )
 	}
 
-	var dh = adhesion + volume + per.r + hper + invn + act + conn -chemotaxis
+	//var dh = adhesion + volume + per.r + hper + invn + act + conn -chemotaxis
 
-	return ({ dH: dh, per: per })
+	return ({ dH: r, per: per })
 
 }
 
@@ -191,61 +213,9 @@ CPM.prototype.monteCarloStep = function(){
 }
 
 
-/* ------------------ CANVAS --------------------------------------- */
-
-CPMCanvas.prototype.setopacity = function( alpha ){
-	this.ctx.globalAlpha = alpha
-}
-
-CPMCanvas.prototype.chemokineIntensity = function( p ){
-
-	var gradienttype = this.C.conf["GRADIENT_TYPE"]
-	var gradientvec = this.C.conf["GRADIENT_DIRECTION"]
-
-	if( gradienttype == "linear" ){
-		var gmax = gradientvec[0]*this.C.field_size.x + gradientvec[1]*this.C.field_size.y
-		var gval = 0.0 + (gradientvec[0]*p[0]) + ( gradientvec[1]*p[1] )
-		return( gval/gmax )
-	} else if( gradienttype == "radial" ){
-		var maxx = gradientvec[0], maxy = gradientvec[1]
-		if( this.C.field_size.x - maxx > maxx ){
-			maxx = this.C.field_size.x - maxx
-		}
-		if( this.C.field_size.y - maxy > maxy ){
-			maxy = this.C.field_size.y - maxy
-		}
-		var distx = p[0] - gradientvec[0], disty = p[1] - gradientvec[1]
-		var gmax = Math.sqrt( maxx*maxx + maxy*maxy )
-		var gval = 0.0 + Math.sqrt( distx*distx + disty*disty )
-
-	} else {
-		throw("Unknown gradienttype")
-	}
-	return (1-gval/gmax)
-}
-CPMCanvas.prototype.drawChemokineGradient = function( col ){
-
-	var i,j,alpha
-	col = col || "000000"
-	this.col( col )
-
-	for( i = 0; i < this.C.field_size.x; i++ ){
-		for( j = 0; j < this.C.field_size.y; j++ ){
-			alpha = 1*this.chemokineIntensity( [i,j] )
-			this.setopacity( alpha*alpha )
-
-			
-			this.pxf( [i,j] )
-		}
-	}
-	this.setopacity( 1 )
-
-}
-
-
-
 /* This allows using the code in either the browser or with nodejs. */
 if( typeof module !== "undefined" ){
+	var CPM = require("./CPM.js" )	
 	var DiceSet = require("./DiceSet.js")
 	module.exports = CPM
 }
