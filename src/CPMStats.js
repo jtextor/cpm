@@ -358,8 +358,8 @@ CPMStats.prototype = {
 			cp[t].push( px[i] )
 		}
 		return cp
- 	}
- 	
+	}
+	
 }
 
 

@@ -25,12 +25,13 @@ var C = new CPM( 2, {x: fieldSize, y:fieldSize}, {
 	T : 20,
 	ACT_MEAN : "geometric" 
 })
-
+C.addStromaBorder()
 var Cstat = new CPMStats( C )
 var Cim = new CPMCanvas( C )
 var t = 0
 
 // Seed cells
+var i
 for( i = 0 ; i < nrCells ; i ++ ){
 	C.seedCell()
 }
