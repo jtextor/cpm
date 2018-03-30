@@ -312,7 +312,7 @@ CPMStats.prototype = {
 			// we only consider non-zero gradients for the order index
 			if( gn != 0 ){
 				for( d = 0; d < this.C.ndim; d++ ){
-					gradientsum[d] += g[d]/gn
+					gradientsum[d] += 100*g[d]/gn/cellindices.length
 				}
 			}
 		}
@@ -323,7 +323,7 @@ CPMStats.prototype = {
 		return orderindex	
 	},
 	getOrderIndices : function( ){
-		var cpi = this.cellpixelsi()
+		var cpi = this.cellborderpixelsi() //this.cellpixelsi()
 		var tx = Object.keys( cpi ), i, orderindices = {}
 		for( i = 0 ; i < tx.length ; i ++ ){
 			orderindices[tx[i]] = this.getOrderIndexOfCell( tx[i], cpi[tx[i]] )
@@ -358,7 +358,20 @@ CPMStats.prototype = {
 			cp[t].push( px[i] )
 		}
 		return cp
- 	}
+ 	},
+
+	cellborderpixelsi : function(){
+		let cp = {},t
+		const px = this.C.cellborderpixels.elements
+		for( let i = 0; i < px.length; i++ ){
+			t = this.C.cellpixelstype[px[i]]
+			if( !(t in cp ) ){
+				cp[t] = []
+			}
+			cp[t].push( px[i] )
+		}
+		return cp		
+	}
  	
 }
 
