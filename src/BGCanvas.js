@@ -83,10 +83,12 @@ BGCanvas.prototype = {
 
 		var gradienttype = this.C.conf["GRADIENT_TYPE"]
 		var gradientvec = this.C.conf["GRADIENT_DIRECTION"]
+		let gmax, gval
+
 
 		if( gradienttype == "linear" ){
-			var gmax = gradientvec[0]*this.C.field_size.x + gradientvec[1]*this.C.field_size.y
-			var gval = 0.0 + (gradientvec[0]*p[0]) + ( gradientvec[1]*p[1] )
+			gmax = gradientvec[0]*this.C.field_size.x + gradientvec[1]*this.C.field_size.y
+			gval = 0.0 + (gradientvec[0]*p[0]) + ( gradientvec[1]*p[1] )
 			return( gval/gmax )
 		} else if( gradienttype == "radial" ){
 			var maxx = gradientvec[0], maxy = gradientvec[1]
@@ -97,8 +99,8 @@ BGCanvas.prototype = {
 				maxy = this.C.field_size.y - maxy
 			}
 			var distx = p[0] - gradientvec[0], disty = p[1] - gradientvec[1]
-			var gmax = Math.sqrt( maxx*maxx + maxy*maxy )
-			var gval = 0.0 + Math.sqrt( distx*distx + disty*disty )
+			gmax = Math.sqrt( maxx*maxx + maxy*maxy )
+			gval = 0.0 + Math.sqrt( distx*distx + disty*disty )
 
 		} else {
 			throw("Unknown gradienttype")

@@ -1,4 +1,34 @@
-
+2018-03-29 Inge Wortel <ingewortel@gmail.com>
+	* src/CPM.js : rewritten with new javascript "class" syntax. Also restructured the 
+	code, implemented a dynamic computation of the hamiltonian. The attribute 
+	"this.terms" contains the terms of the Hamiltonian to be considered. By default, the 
+	terms are ["adhesion","volume","perimeter", "actmodel"]. The basic CPM class also 
+	supports terms "connectivity" and "invasiveness", but these are not part of the 
+	Hamiltonian by default. Add them by typing eg C.terms.push["connectivity"]. Changed
+	"var" to the new "const" and "let" wherever possible.
+	* src/CPM.js ( deltaH ) : computes the Hamiltonian depending on this.terms.
+	Also logs Hamiltonian terms to the console if this.logterms = true.
+	* src/CPM.js ( deltaHadhesion, deltaHvolume, deltaHperimeter, deltaHconnectivity, 
+	deltaHinvasiveness, deltaHactmodel ) : new functions to compute the different terms
+	of the Hamiltonian. 
+	* src/CPM.js ( deltaHconnectivity ) : changed so that it computes the cost appropriately
+	in a case where both the source and target cell have a non-zero lambda connectivity.
+	* src/CPM.js ( monteCarloStep ) : simplified, now computes Hamiltonian via a call to
+	deltaH instead of within the function itself.
+	* src/CPM.js ( neighi2D, neighi3D ) : changed order of output of
+	the neighbourhood pixels, which fixes the bug in the connectivity constraint.
+	* src/CPM.js ( neighC2D, neighC3D ) : changed into a method because the new class
+	syntax requires this.
+	* src/CPMchemotaxis.js : rewritten to extend the CPM class according to the new syntax.
+	This now also works in node.
+	* examples-node/run-2d-chemokine.js : added an example of chemotaxis in node.
+	* examples-node/Makefile : modified to make movie of the chemotaxis example.
+	* examples-node & examples-browser : added the line C.addStromaBorder() where 
+	necessary to prevent cells from moving off te grid. (The stroma border was present by
+	default in an earlier version, but not anymore).
+	* src/CPMStats.js : changed computation of orderindex for normalized version, using
+	only the cellborderpixels.
+	
 2018-03-22 Inge Wortel <ingewortel@gmail.com>
 	* src/CPMStats.js : added functions to compute percentage of active pixels in a cell.
 	* src/CPMStats.js : added functions to compute order index of the act gradient in a cell.

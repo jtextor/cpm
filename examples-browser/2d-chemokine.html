@@ -20,7 +20,7 @@ var C,Cim,t=0, burnin_time=100, runtime=10000, zoom=2, wrap=[0,0]
 function initialize(){
 
 	// Create a CPM object
-	C = new CPM( 2, {x: 400, y:200}, {
+	C = new CPMchemotaxis( 2, {x: 400, y:200}, {
 		LAMBDA_CHEMOTAXIS : [0,30],
 		LAMBDA_CONNECTIVITY : [0,0],
 		LAMBDA_P : [0,2],

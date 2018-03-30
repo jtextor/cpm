@@ -22,7 +22,7 @@ var C = new CPM( 3, {x: fieldSize, y:fieldSize, z:fieldSize}, {
 	T : 7,
 	ACT_MEAN : "arithmetic"
 })
-
+C.addStromaBorder()
 var Cstat = new CPMStats( C )
 
 // Seed nrCells of kind 1 and kind 2

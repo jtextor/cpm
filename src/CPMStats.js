@@ -323,7 +323,7 @@ CPMStats.prototype = {
 		return orderindex	
 	},
 	getOrderIndices : function( ){
-		var cpi = this.cellborderpixelsi() //this.cellpixelsi()
+		var cpi = this.cellborderpixelsi()
 		var tx = Object.keys( cpi ), i, orderindices = {}
 		for( i = 0 ; i < tx.length ; i ++ ){
 			orderindices[tx[i]] = this.getOrderIndexOfCell( tx[i], cpi[tx[i]] )
@@ -360,8 +360,9 @@ CPMStats.prototype = {
 		return cp
  	},
 
+
 	cellborderpixelsi : function(){
-		let cp = {},t
+		let cp = {}, t
 		const px = this.C.cellborderpixels.elements
 		for( let i = 0; i < px.length; i++ ){
 			t = this.C.cellpixelstype[px[i]]
@@ -372,7 +373,7 @@ CPMStats.prototype = {
 		}
 		return cp		
 	}
- 	
+
 }
 
 
