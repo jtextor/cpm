@@ -90,7 +90,7 @@ CPMCanvas.prototype = {
 	/* Use to draw the border of each cell on the grid in the color specified in "col"
 	(hex format). This function draws a line around the cell (rather than coloring the
 	outer pixels)*/
-	drawCellBorders : function( col ){
+	drawCellBorders : function( kind, col ){
 		col = col || "000000"
 		var p, pc, pu, pd, pl, pr, i, pdraw
 		this.col( col )
@@ -99,25 +99,28 @@ CPMCanvas.prototype = {
 		// cst contains indices of pixels at the border of cells
 		var cst =  this.C.cellborderpixels.elements
 		for( i = 0 ; i < cst.length ; i ++ ){
-			p = this.C.i2p( cst[i] )
-			pdraw = this.i2p( cst[i] )
-			pc = this.C.pixt( [p[0],p[1],0] )
-			pr = this.C.pixt( [p[0]+1,p[1],0] )
-			pl = this.C.pixt( [p[0]-1,p[1],0] )		
-			pd = this.C.pixt( [p[0],p[1]+1,0] )
-			pu = this.C.pixt( [p[0],p[1]-1,0] )
-			if( pc != pl  ){
-				this.pxdrawl( pdraw )
+			if( this.C.cellKind(this.C.cellpixelstype[cst[i]]) == kind ){
+				p = this.C.i2p( cst[i] )
+				pdraw = this.i2p( cst[i] )
+				pc = this.C.pixt( [p[0],p[1],0] )
+				pr = this.C.pixt( [p[0]+1,p[1],0] )
+				pl = this.C.pixt( [p[0]-1,p[1],0] )		
+				pd = this.C.pixt( [p[0],p[1]+1,0] )
+				pu = this.C.pixt( [p[0],p[1]-1,0] )
+				if( pc != pl  ){
+					this.pxdrawl( pdraw )
+				}
+				if( pc != pr ){
+					this.pxdrawr( pdraw )
+				}
+				if( pc != pd ){
+					this.pxdrawd( pdraw )
+				}
+				if( pc != pu ){
+					this.pxdrawu( pdraw )
+				}
 			}
-			if( pc != pr ){
-				this.pxdrawr( pdraw )
-			}
-			if( pc != pd ){
-				this.pxdrawd( pdraw )
-			}
-			if( pc != pu ){
-				this.pxdrawu( pdraw )
-			}
+
 		}
 	},
 	/* Use to show activity values of the act model using a color gradient, for
