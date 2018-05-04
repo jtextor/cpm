@@ -33,7 +33,7 @@ var Cstat = new CPMStats( C )
 var Cim = new CPMCanvas( C )
 var Cimgradient = new BGCanvas( C )
 Cimgradient.drawChemokineGradient( "0061ff" )
-C.addStromaBorder()
+//C.addStromaBorder()
 var t = 0
 
 // Seed cells

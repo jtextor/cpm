@@ -1,3 +1,6 @@
+2018-05-04 Inge Wortel <ingewortel@gmail.com>
+	* Updated some examples in examples-node and example-browser to demonstrate torus.
+
 2018-04-23 Inge Wortel <ingewortel@gmail.com>
 	* src/CPM.js (neighi2D, neighi3D ) : changed computation of neighborhood to create a 
 	torus grid. Both functions have an argument torus (true by default). If torus is false,

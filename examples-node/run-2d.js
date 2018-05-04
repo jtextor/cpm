@@ -5,7 +5,7 @@ var CPM = require("../src/CPM.js")
 var CPMStats = require("../src/CPMStats.js")
 var CPMCanvas = require("../src/CPMCanvas.js")
 
-var burnin=50, maxtime=500
+var burnin=50, maxtime=5000
 
 var nrCells = parseInt(process.argv[2]) || 1
 var fieldSize = parseInt(process.argv[3]) || 1000
@@ -25,7 +25,7 @@ var C = new CPM( 2, {x: fieldSize, y:fieldSize}, {
 	T : 20,
 	ACT_MEAN : "geometric" 
 })
-C.addStromaBorder()
+//C.addStromaBorder()
 var Cstat = new CPMStats( C )
 var Cim = new CPMCanvas( C )
 var t = 0
@@ -45,12 +45,12 @@ for( i = 0 ; i < burnin ; i ++ ){
 for( i = 0 ; i < maxtime ; i ++ ){
 	C.monteCarloStep()
 	Cstat.centroids()
-	console.log( Cstat.getConnectedness() )
+	//console.log( Cstat.getConnectedness() )
 	if( i % framerate == 0 ){
 		Cim.clear( "FFFFFF" )
 		//Cim.drawCells( 2, "990000" )
 		Cim.drawCells( 1, "CCCCCC" )
-		Cim.drawCellBorders( "FFFFFF" )
+		Cim.drawCellBorders( 1, "000000" )
 		Cim.writePNG( "output/"+t+".png" )
 		t ++
 	}
