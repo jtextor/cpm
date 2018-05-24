@@ -1,3 +1,20 @@
+2018-05-04 Inge Wortel <ingewortel@gmail.com>
+	* Updated some examples in examples-node and example-browser to demonstrate torus.
+
+2018-04-23 Inge Wortel <ingewortel@gmail.com>
+	* src/CPM.js (neighi2D, neighi3D ) : changed computation of neighborhood to create a 
+	torus grid. Both functions have an argument torus (true by default). If torus is false,
+	the neighbors that cross the grid border are returned as NaN.
+	* src/CPMStats.js (getCentroidOf) : changed computation of centroids to account for
+	torus. New functions now return the pixel coordinates of connected components of a 
+	cell (returnConnectedComponentsOfCell), compute the centroids of each (pixelsToCentroid),
+	and compute the weighted average of these centroids, corrected for crossing the border
+	(getCentroidOfCellWithTorus). 
+	* src/CPMStats.js (getConnectedComponents, getConnectedness, getPercentageAct,
+	getCentroids ) : these functions now take an object cpi (result of this.cellpixelsi())
+	as an optional argument, to make code more efficient when several metrics are 
+	computed on cpi.
+
 2018-03-29 Inge Wortel <ingewortel@gmail.com>
 	* src/CPM.js : rewritten with new javascript "class" syntax. Also restructured the 
 	code, implemented a dynamic computation of the hamiltonian. The attribute 

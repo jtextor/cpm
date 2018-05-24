@@ -220,16 +220,162 @@ class CPM {
 		the wrapper function neighi, depending on this.ndim.
 
 	*/
-	neighi2D( i ){
-		return [
-			i-this.dy-1, i-1, i+this.dy-1,
-			i-this.dy,i+this.dy,
-			i-this.dy +1, i+1, i+this.dy+1 ]
+	neighi2D( i, torus = true ){
+	
+		// normal computation of neighbor indices (top left-middle-right, 
+		// left, right, bottom left-middle-right)
+		let tl, tm, tr, l, r, bl, bm, br
+		
+		tl = i-1-this.dy; tm = i-1; tr = i-1+this.dy
+		l = i-this.dy; r = i+this.dy
+		bl = i+1-this.dy; bm = i+1; br = i+1+this.dy
+		
+		// if pixel is part of one of the borders, adjust the 
+		// indices accordingly
+		let add = NaN // if torus is false, return NaN for all neighbors that cross
+		// the border.
+		
+		// left border
+		if( i < this.field_size.y ){
+			if( torus ){
+				add = this.field_size.x * this.dy
+			}
+			tl += add; l += add; bl += add 	
+		}
+		
+		// right border
+		if( i >= this.dy*( this.field_size.x - 1 ) ){
+			if( torus ){
+				add = -this.field_size.x * this.dy
+			}
+			tr += add; r += add; br += add
+		}
+
+		// top border
+		if( i % this.dy == 0 ){
+			if( torus ){
+				add = this.field_size.y
+			}
+			tl += add; tm += add; tr += add	
+		}
+		
+		// bottom border
+		if( (i+1-this.field_size.y) % this.dy == 0 ){
+			if( torus ){
+				add = -this.field_size.y
+			}
+			bl += add; bm += add; br += add
+		}
+		
+		return [ tl, l, bl, tm, bm, tr, r, br ]
+
 	}
-	neighi3D( i ){
-		const dy = this.dy
-		const dz = this.dz
-		return[
+	neighi3D( i, torus = true ){
+	
+		const dy = this.dy, dz = this.dz
+		const fsx = this.field_size.x, fsy = this.field_size.y, fsz = this.field_size.z
+		
+		// normal computation of neighbor indices.
+		// first letter: U(upper), M(middle), B(bottom) layer
+		// second letter: l(left), m(middle), r(right)
+		// third letter: t(top), c(center), b(bottom)
+		
+		let Ult, Umt, Urt, Ulc, Umc, Urc, Ulb, Umb, Urb,
+			Mlt, Mmt, Mrt, Mlc, /*Mmc*/ Mrc, Mlb, Mmb, Mrb,
+			Blt, Bmt, Brt, Blc, Bmc, Brc, Blb, Bmb, Brb
+		
+		Ult = i-1-dz-dy; Umt = i-1-dz; Urt = i-1-dz+dy
+		Ulc = i-1-dy; Umc = i-1; Urc = i-1+dy
+		Ulb = i-1+dz-dy; Umb = i-1+dz; Urb = i-1+dz+dy
+		
+		Mlt = i-dz-dy; Mmt = i-dz; Mrt = i-dz+dy
+		Mlc = i-dy; /*Mmc = i */ Mrc = i+dy
+		Mlb = i+dz-dy; Mmb = i+dz; Mrb = i+dz+dy
+		
+		Blt = i+1-dz-dy; Bmt = i+1-dz; Brt = i+1-dz+dy
+		Blc = i+1-dy; Bmc = i+1; Brc = i+1+dy
+		Blb = i+1+dz-dy; Bmb = i+1+dz; Brb = i+1+dz+dy
+		
+		// Additions for up/down/left/right/front/back border "faces"
+		let add = NaN // if torus is false, return NaN for all neighbors that cross
+		// the border.
+		
+		// back border
+		if( i < dz ){
+			if( torus ){
+				add = fsy*dz
+			}
+			Ult += add; Umt += add; Urt += add; 
+			Mlt += add; Mmt += add; Mrt += add;
+			Blt += add; Bmt += add; Brt += add
+		}
+		
+		// front border
+		if( i >= dz*( fsy-1 ) ){
+			if( torus ){
+				add = -fsy*dz
+			}
+			Ulb += add; Umb += add; Urb += add
+			Mlb += add; Mmb += add; Mrb += add
+			Blb += add; Bmb += add; Brb += add		
+		}
+		
+		// left border
+		if( i%dz < dy ){
+			if( torus ){
+				add = fsx*dy
+			}
+			Ult += add; Ulc += add; Ulb += add
+			Mlt += add; Mlc += add; Mlb += add
+			Blt += add; Blc += add; Blb += add
+		}
+		
+		// right border
+		if( i%dz >= dy*( fsx-1 ) ){
+			if( torus ){
+				add = -fsx*dy
+			}
+			Urt += add; Urc += add; Urb += add
+			Mrt += add; Mrc += add; Mrb += add
+			Brt += add; Brc += add; Brb += add
+		}
+		
+		// upper border
+		if( ( i%dz )%dy == 0 ){
+			if( torus ){
+				add = fsz
+			}
+			Ult += add; Umt += add; Urt += add
+			Ulc += add; Umc += add;	Urc += add
+			Ulb += add; Umb += add; Urb += add
+		}
+		
+		// down border
+		if( ( i%dz )%dy == (fsz-1) ){
+			if( torus ){
+				add = -fsz
+			}
+			Blt += add; Bmt += add; Brt += add
+			Blc += add; Bmc += add; Brc += add
+			Blb += add; Bmb += add; Brb += add
+		}
+		
+		return [
+			Ult, Ulc, Ulb,
+			Umt, Umc, Umb,
+			Urt, Urc, Urb,
+			
+			Mlt, Mlc, Mlb,
+			Mmt, Mmb,
+			Mrt, Mrc, Mrb,
+			
+			Blt, Blc, Blb,
+			Bmt, Bmc, Bmb,
+			Brt, Brc, Brb		
+		
+		]
+		
+		/*return[
 		
 			i-1-dy-dz, i-1-dz, i-1+dy-dz,
 			i-dy-dz, i-dz, i+dy-dz,
@@ -241,7 +387,7 @@ class CPM {
 			
 			i-1-dy+dz, i-1+dz, i-1+dy+dz,
 			i-dy+dz, i+dz, i+dy+dz, 
-			i+1-dy+dz, i+1+dz, i+1+dy+dz ]	
+			i+1-dy+dz, i+1+dz, i+1+dy+dz ]	*/
 	}
 
 

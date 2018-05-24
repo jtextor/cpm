@@ -8,6 +8,9 @@ function CPMStats( C ){
 }
 
 CPMStats.prototype = {
+
+	// ------------  FRC NETWORK 
+
 	// for simulation on FRC network. Returns all cells that are in contact with
 	// a stroma cell.
 	cellsOnNetwork : function(){
@@ -24,6 +27,11 @@ CPMStats.prototype = {
 		}
 		return r
 	},
+	
+	
+	// ------------  CELL LENGTH IN ONE DIMENSION
+	// (this does not work with a grid torus).
+		
 	// For computing mean and variance with online algorithm
 	updateOnline : function( aggregate, value ){
 		
@@ -66,6 +74,7 @@ CPMStats.prototype = {
 		return stats
 	},
 	// get the length (variance) of cell in a given dimension
+	// does not work with torus!
 	getLengthOf : function( t, dim ){
 		
 		// get mean and sd in x direction
@@ -74,6 +83,7 @@ CPMStats.prototype = {
 
 	},
 	// get the range of coordinates in dim for cell t
+	// does not work with torus!
 	getRangeOf : function( t, dim ){
 
 		var minc, maxc, cpt, j
@@ -96,6 +106,10 @@ CPMStats.prototype = {
 		return( maxc - minc )		
 
 	},
+	
+	// ------------  CONNECTEDNESS OF CELLS
+	// ( compatible with torus )
+	
 	// Compute connected components of the cell ( to check connectivity )
 	getConnectedComponentOfCell : function( t, cellindices ){
 		if( cellindices.length == 0 ){ return }
@@ -130,16 +144,36 @@ CPMStats.prototype = {
 		return volume
 	},
 	getConnectedComponents : function(){
-		var cpi = this.cellpixelsi()
-		var tx = Object.keys( cpi ), i, volumes = {}
+	
+		let cpi
+	
+		if( arguments.length == 1 ){
+			cpi = arguments[0]
+		} else {
+			cpi = this.cellpixelsi()
+		}
+
+		const tx = Object.keys( cpi )
+		let i, volumes = {}
 		for( i = 0 ; i < tx.length ; i ++ ){
 			volumes[tx[i]] = this.getConnectedComponentOfCell( tx[i], cpi[tx[i]] )
 		}
 		return volumes
-	},
+	},	
+	
 	// Compute probabilities that two pixels taken at random come from the same cell.
 	getConnectedness : function(){
-		var v = this.getConnectedComponents(), s = {}, r = {}, i, j
+	
+		let cpi
+	
+		if( arguments.length == 1 ){
+			cpi = arguments[0]
+		} else {
+			cpi = this.cellpixelsi()
+		}
+	
+		const v = this.getConnectedComponents( cpi )
+		let s = {}, r = {}, i, j
 		for( i in v ){
 			s[i] = 0
 			r[i] = 0
@@ -151,7 +185,11 @@ CPMStats.prototype = {
 			}
 		}
 		return r
-	},
+	},	
+	
+	// ------------  PROTRUSION ANALYSIS: PERCENTAGE ACTIVE / ORDER INDEX 
+	// ( compatible with torus )
+	
 	// Compute percentage of pixels with activity > threshold
 	getPercentageActOfCell : function( t, cellindices, threshold ){
 		if( cellindices.length == 0 ){ return }
@@ -166,136 +204,23 @@ CPMStats.prototype = {
 	
 	},
 	getPercentageAct : function( threshold ){
-		var cpi = this.cellpixelsi()
-		var tx = Object.keys( cpi ), i, activities = {}
+	
+		let cpi
+	
+		if( arguments.length == 2 ){
+			cpi = arguments[1]
+		} else {
+			cpi = this.cellpixelsi()
+		}
+	
+		const tx = Object.keys( cpi )
+		let i, activities = {}
 		for( i = 0 ; i < tx.length ; i ++ ){
 			activities[tx[i]] = this.getPercentageActOfCell( tx[i], cpi[tx[i]], threshold )
 		}
 		return activities
 	
 	},
-	// center of mass of cell t
-	// the cellpixels object can be given as the second argument
-	getCentroidOf : function( t ){
-		var j, dim, cvec, cpt
-		if( arguments.length == 2 ){
-			cpt = arguments[1][t]
-		} else {
-			cpt = this.cellpixels()[t]
-		}
-		// fill the array cvec with zeros first
-		cvec = Array.apply(null, Array(this.ndim)).map(Number.prototype.valueOf,0)
-
-		// loop over pixels to sum up coordinates
-		for( j = 0; j < cpt.length; j++ ){
-			// loop over coordinates x,y,z
-			for( dim = 0; dim < this.ndim; dim++ ){
-				cvec[dim] += cpt[j][dim]
-			}		
-		}
-
-		// divide to get mean
-		for( dim = 0; dim < this.ndim; dim++ ){
-			cvec[dim] /= j
-		}
-
-		return cvec
-	},
-	// center of mass (return)
-	getCentroids : function(){
-		var cp = this.cellpixels()
-		var tx = Object.keys( cp )
-		var cvec, r = [], current, i
-
-		// loop over the cells in tx to get their centroids
-		for( i = 0; i < tx.length; i++ ){
-			cvec = this.getCentroidOf( tx[i] )
-
-			// output depending on ndim
-			current = { id : tx[i], x : cvec[0], y : cvec[1] }
-			if( this.ndim == 3 ){
-				current["z"] = cvec[2]			
-			}
-			r.push( current )
-		}
-		return r
-	},
-	getConnectedComponentOfCell : function( t, cellindices ){
-		if( cellindices.length == 0 ){ return }
-
-		var visited = {}, k=1, volume = {}, myself = this
-
-		var labelComponent = function(seed, k){
-			var q = [parseInt(seed)]
-			visited[q[0]] = 1
-			volume[k] = 0
-			while( q.length > 0 ){
-				var e = parseInt(q.pop())
-				volume[k] ++
-				var ne = myself.C.neighi( e )
-				for( var i = 0 ; i < ne.length ; i ++ ){									if( myself.C.pixti( ne[i] ) == t &&
-						!visited.hasOwnProperty(ne[i]) ){
-						q.push(ne[i])
-						visited[ne[i]]=1
-					}
-				}
-			}
-		}
-
-		for( var i = 0 ; i < cellindices.length ; i ++ ){
-			if( !visited.hasOwnProperty( cellindices[i] ) ){
-				labelComponent( cellindices[i], k )
-				k++
-			}
-		}
-
-		return volume
-	},
-	getConnectedComponents : function(){
-		var cpi = this.cellpixelsi()
-		var tx = Object.keys( cpi ), i, volumes = {}
-		for( i = 0 ; i < tx.length ; i ++ ){
-			volumes[tx[i]] = this.getConnectedComponentOfCell( tx[i], cpi[tx[i]] )
-		}
-		return volumes
-	},
-	// Compute probabilities that two pixels taken at random come from the same cell.
-	getConnectedness : function(){
-		var v = this.getConnectedComponents(), s = {}, r = {}, i, j
-		for( i in v ){
-			s[i] = 0
-			r[i] = 0
-			for( j in v[i] ){
-				s[i] += v[i][j]
-			}
-			for( j in v[i] ){
-				r[i] += (v[i][j]/s[i]) * (v[i][j]/s[i])
-			}
-		}
-		return r
-	},
-	// center of mass (print to console)
-	centroids : function(){
-		var cp = this.cellpixels()
-		var tx = Object.keys( cp )	
-		var cvec, i
-
-		// loop over the cells in tx to get their centroids
-		for( i = 0; i < tx.length; i++ ){
-			cvec = this.getCentroidOf( tx[i] )
-
-			// eslint-disable-next-line no-console
-			console.log( 
-				tx[i] + "\t" +
-				this.C.time + "\t" +
-				this.C.time + "\t" +
-				cvec.join("\t")
-			)
-
-		}
-	},
-	
-	
 	// Computing an order index of the activity gradients within the cell.
 	getGradientAt : function( t, i ){
 	
@@ -385,6 +310,189 @@ CPMStats.prototype = {
 		return orderindices
 	
 	},
+	
+	// ------------  CENTROIDS
+	// ( compatible with torus )
+	//
+	// computation of cell centroid is more complicated when the grid is a torus.
+	// We compute connected components of the cell with the option torus = false in
+	// the computation of neighbourhoods, which means that pixels crossing the border
+	// are not considered neighbours (see CPM.js ). We then compute the total centroid as
+	// a weighted average of the centroids of the connected components, which we correct
+	// separately if they cross the grid borders. 
+	
+	// Return connected components of the cell ( to compute centroids )
+	returnConnectedComponentOfCell : function( t, cellindices ){
+		if( cellindices.length == 0 ){ return }
+
+		var visited = {}, k=1, pixels = {}, myself = this
+
+		var labelComponent = function(seed, k){
+			var q = [parseInt(seed)]
+			visited[q[0]] = 1
+			pixels[k] = []
+			while( q.length > 0 ){
+				var e = parseInt(q.pop())
+				pixels[k].push( myself.C.i2p(e) )
+				var ne = myself.C.neighi( e, torus = false )
+				for( var i = 0 ; i < ne.length ; i ++ ){
+					if( !isNaN( ne[i] ) ){
+						if( myself.C.pixti( ne[i] ) == t &&
+							!visited.hasOwnProperty(ne[i]) ){
+							q.push(ne[i])
+							visited[ne[i]]=1
+						}
+					
+					}
+
+				}
+			}
+		}
+
+		for( var i = 0 ; i < cellindices.length ; i ++ ){
+			if( !visited.hasOwnProperty( cellindices[i] ) ){
+				labelComponent( cellindices[i], k )
+				k++
+			}
+		}
+
+		return pixels
+	},
+	// converts an array of pixel coordinates to its centroid
+	pixelsToCentroid : function( cellpixels ){
+		let cvec, j
+
+		// fill the array cvec with zeros first
+		cvec = Array.apply(null, Array(this.ndim)).map(Number.prototype.valueOf,0)
+
+		// loop over pixels to sum up coordinates
+		for( j = 0; j < cellpixels.length; j++ ){
+			// loop over coordinates x,y,z
+			for( dim = 0; dim < this.ndim; dim++ ){
+				cvec[dim] += cellpixels[j][dim]
+			}		
+		}
+
+		// divide to get mean
+		for( dim = 0; dim < this.ndim; dim++ ){
+			cvec[dim] /= j
+		}
+
+		return cvec
+	},
+	// computes the centroid of a cell when grid has a torus.
+	getCentroidOfCellWithTorus : function( t, cellindices ){
+		
+		if( cellindices.length == 0 ){ return }
+		
+		// get the connected components and the pixels in it
+		let ccpixels = this.returnConnectedComponentOfCell( t, cellindices )
+		
+		// centroid of the first component
+		let c = Object.keys( ccpixels )
+		let centroid0 = this.pixelsToCentroid( ccpixels[ c[0] ] )
+
+		// loop over the connected components to compute a weighted sum of their 
+		// centroids.
+		let n = 0, 
+			centroid = Array.apply(null, Array(this.ndim)).map(Number.prototype.valueOf,0)
+		const fs = [ this.C.field_size.x, this.C.field_size.y, this.C.field_size.z ]
+		for( j = 0; j < c.length; j++ ){
+		
+			let centroidc, nc, d
+			centroidc = this.pixelsToCentroid( ccpixels[ c[j] ] )
+			nc = ccpixels[ c[j] ].length
+			n += nc
+			
+			// compute weighted sum. 
+			for( d = 0; d < this.ndim; d++ ){
+			
+				// If centroid is more than half the field size away
+				// from the first centroid0, it crosses the border, so we 
+				// first correct its coordinates.
+				if( centroidc[d] - centroid0[d] > fs[d]/2 ){
+					centroidc[d] -= fs[d]
+				}
+				if( centroidc[d] - centroid0[d] < -fs[d]/2 ){
+					centroidc[d] += fs[d]
+				}
+				
+				centroid[d] += centroidc[d] * nc
+			}
+			
+		}
+		
+		// divide by the total n to get the mean
+		let d
+		for( d = 0; d < this.ndim; d++ ){
+			centroid[d] /= n
+		}
+
+		return centroid		
+	},	
+	// center of mass of cell t; cellpixels object can be given as the second argument
+	getCentroidOf : function( t ){
+		var cvec, cpt
+		if( arguments.length == 2 ){
+			cpt = arguments[1]
+		} else {
+			cpt = this.cellpixelsi()
+		}
+		
+		cvec = this.getCentroidOfCellWithTorus( t, cpt )
+
+		return cvec
+	},
+	// center of mass (return)
+	getCentroids : function(){
+		
+		let cpi
+	
+		if( arguments.length == 1 ){
+			cpi = arguments[0]
+		} else {
+			cpi = this.cellpixelsi()
+		}
+	
+		const tx = Object.keys( cpi )
+		let cvec, r = [], current, i
+
+		// loop over the cells in tx to get their centroids
+		for( i = 0; i < tx.length; i++ ){
+			cvec = this.getCentroidOf( tx[i], cpi[tx[i]] )
+
+			// output depending on ndim
+			current = { id : tx[i], x : cvec[0], y : cvec[1] }
+			if( this.ndim == 3 ){
+				current["z"] = cvec[2]			
+			}
+			r.push( current )
+		}
+		return r
+	},
+	// center of mass (print to console)
+	centroids : function(){
+		var cp = this.cellpixelsi()
+		var tx = Object.keys( cp )	
+		var cvec, i
+
+		// loop over the cells in tx to get their centroids
+		for( i = 0; i < tx.length; i++ ){
+			cvec = this.getCentroidOf( tx[i], cp[tx[i]] )
+
+			// eslint-disable-next-line no-console
+			console.log( 
+				tx[i] + "\t" +
+				this.C.time + "\t" +
+				this.C.time + "\t" +
+				cvec.join("\t")
+			)
+
+		}
+	},
+
+
+	// ------------ HELPER FUNCTIONS
 	
 	// returns an object with a key for each celltype (identity). 
 	// The corresponding value is an array of pixel coordinates per cell.
