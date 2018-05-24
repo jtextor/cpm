@@ -50,8 +50,9 @@ for( i = 0 ; i < maxtime ; i ++ ){
 		Cim.clear( "FFFFFF" )
 		//Cim.drawCells( 2, "990000" )
 		Cim.drawCells( 1, "CCCCCC" )
-		Cim.drawCellBorders( 1, "000000" )
-		Cim.writePNG( "output/"+t+".png" )
+
+		Cim.drawCellBorders( "FFFFFF" )
+		Cim.writePNG( "output/2d-"+t+".png" )
 		t ++
 	}
 }
