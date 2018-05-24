@@ -60,7 +60,7 @@ for( i = 0 ; i < maxtime ; i ++ ){
 		Cim.drawCells( 1, "000000")
 		Cim.drawActivityValues( 1 )
 		Cim.drawCellBorders( "FFFFFF" )
-		Cim.writePNG( "output/2dchemokine"+t+".png" )
+		Cim.writePNG( "output/2d-chemokine-"+t+".png" )
 		t ++
 	}
 }
