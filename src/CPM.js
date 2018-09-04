@@ -96,8 +96,8 @@ class CPM {
 		}
 		
 		// terms to use in the Hamiltonian
-		if( this.conf.terms ){
-			this.terms = this.conf.terms
+		if( this.conf.TERMS ){
+			this.terms = this.conf.TERMS
 		} else {
 			this.terms = ["adhesion","volume","perimeter","actmodel"] //,"connectivity"]
 		}

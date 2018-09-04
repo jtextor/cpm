@@ -57,19 +57,27 @@ class CPMchemotaxis extends CPM {
 		}
 		return r/Math.sqrt(norm1)/Math.sqrt(norm2)
 	}
+
+	/* This computes the gradient based on a given function evaluated at the two target points. */ 
+	gridAttractor ( p1, p2, dir ){
+		return dir( p2 ) - dir( p1 )
+	}
 	
 	deltaHchemotaxis ( sourcei, targeti, src_type, tgt_type ){
-
 		const gradienttype = this.conf["GRADIENT_TYPE"]
 		const gradientvec = this.conf["GRADIENT_DIRECTION"]
 		let bias, lambdachem
 
 		if( gradienttype == "radial" ){
-			bias = this.pointAttractor( this.i2p(sourcei), this.i2p(targeti),gradientvec )
+			bias = this.pointAttractor( this.i2p(sourcei), this.i2p(targeti), gradientvec )
 		} else if( gradienttype == "linear" ){
-			bias = this.linAttractor( this.i2p(sourcei), this.i2p(targeti),gradientvec )
+			bias = this.linAttractor( this.i2p(sourcei), this.i2p(targeti), gradientvec )
+		} else if( gradienttype == "grid" ){
+			bias = this.gridAttractor( this.i2p( sourcei ), this.i2p( targeti ), gradientvec )
+		} else if( gradienttype == "custom" ){
+			bias = gradientvec( this.i2p( sourcei ), this.i2p( targeti ), this )
 		} else {
-			throw("Unknown GRADIENT_TYPE. Please choose either 'linear' or 'radial'." )
+			throw("Unknown GRADIENT_TYPE. Please choose 'linear', 'radial', 'grid', or 'custom'." )
 		}
 
 		// if source is non background, lambda chemotaxis is of the source cell.
