@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2D CPM</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="../src/DiceSet.js"></script>
+<script type="text/javascript" src="../src/CPM.js"></script>
+<script type="text/javascript" src="../src/CPMStats.js"></script>
+<script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<style type="text/css">
+	canvas {border: 1px solid black}
+	input {width: 100%}
+	p {width:600px; margin: 0; padding: 0}
+</style>
+<script type="text/javascript">
+	
+/* An example 2D CPM with cells of 1 type whose configuration can be changed. */
+
+
+var C,Cs,Cim,t=0, burnin_time=50, maxtime=1e10
+
+function initialize(){
+
+	// Create a CPM object
+	C = new CPM( 2, {x: 300, y: 300}, {
+		LAMBDA_CONNECTIVITY : [0,0],
+		LAMBDA_P : [0,2],
+		LAMBDA_V : [0,50],
+		LAMBDA_ACT : [0,140],
+		MAX_ACT : [0,40],
+		P : [0,340],
+		V : [0,500],
+		J_T_STROMA : [NaN,16],
+		J_T_ECM : [NaN,20],
+		J_T_T : [ [NaN,NaN], [NaN,100] ],
+		T : 20,
+		ACT_MEAN : "geometric" 
+	})
+	//C.addStromaBorder()
+	// Create a canvas to draw on
+	Cim = new CPMCanvas( C, {zoom:2} )
+	Cs = new CPMStats(C)
+
+	// Seed two cells of each type
+	for( i = 0 ; i < 2 ; i ++ ){
+		C.seedCell( 1 )
+	}
+
+	// Burnin phase: only start drawing after the first burnin_time MCS
+	// (because cells need to increase their volume first)
+	for( i = 0 ; i < burnin_time ; i ++ ){
+		C.monteCarloStep()
+	}
+	
+	// simulation
+	timestep()
+}
+
+// Continue until the maximum simulation time is reached. 
+function timestep(){
+
+	// Update the grid with one MCS
+	C.monteCarloStep()
+
+	// Clear the canvas (white), and draw the stroma border in gray
+	Cim.clear( "FFFFFF" )
+	Cim.drawStroma( "AAAAAA" )
+
+	// Draw celltype 1 black with activity values
+	Cim.drawCells( 1, "000000")
+	Cim.drawActivityValues( 1 )
+
+	// Draw the borders of each cell
+	Cim.drawCellBorders()
+
+
+	if( t++ < maxtime ){
+		requestAnimationFrame( timestep )
+	}
+}
+function par(n,v,i,j){
+	document.getElementById("par"+n).innerText=v
+	if( typeof j !== "undefined" ){
+		C.conf[n][i][j]=v
+	} else if( typeof i !== "undefined" ){
+		C.conf[n][i]=v
+	} else {
+		C.conf[n]=v
+	}
+}
+
+function seedCell(){
+	C.seedCell( 1 )
+	for( let i = 0; i < 100; i++ ){
+		C.monteCarloStep()
+	}
+	//C.stop = true
+	//requestAnimationFrame( timestep )
+}
+
+function killCell(){
+	var cpi = Cs.cellpixelsi()
+	var types = Object.keys( cpi )
+	const t = types[ types.length - 1 ]
+	for( let i = 0; i < cpi[t].length; i++ ){
+		C.delpixi(cpi[t][i])
+	}
+	//requestAnimationFrame( timestep )
+}
+
+</script>
+<body onload="initialize()">
+
+
+<p>
+T=<span id="parT">20</span><br/>
+<input type="range" min="0" max="80" value="20"
+			onchange="par('T',this.value)">
+</p>
+<p>
+V=<span id="parV">500</span><br/>
+<input type="range" min="0" max="2000" value="500"
+			onchange="par('V',this.value,1)">
+</p>
+<p>
+&lambda;<sub>V</sub>=<span id="parLAMBDA_V">50</span><br/>
+<input type="range" min="0" max="200" value="50"
+			onchange="par('LAMBDA_V',this.value,1)">
+</p>
+<p>
+P=<span id="parP">340</span><br/>
+<input type="range" min="0" max="1200" value="340"
+			onchange="par('P',this.value,1)">
+</p>
+<p>
+&lambda;<sub>P</sub>=<span id="parLAMBDA_P">2</span><br/>
+<input type="range" min="0" max="10" value="2"
+	onchange="par('LAMBDA_P',this.value,1)">
+</p>
+<p>
+max<sub>act</sub>=<span id="parMAX_ACT">40</span><br/>
+<input type="range" min="0" max="120" value="40"
+			onchange="par('MAX_ACT',this.value,1)">
+</p>
+<p>
+&lambda;<sub>act</sub>=<span id="parLAMBDA_ACT">140</span><br/>
+<input type="range" min="0" max="500" value="140"
+	onchange="par('LAMBDA_ACT',this.value,1)">
+</p>
+<p>
+J<sub>cell,cell</sub>=<span id="parJ_T_T">340</span><br/>
+<input type="range" min="0" max="1200" value="340"
+			onchange="par('J_T_T',this.value,1,1)">
+</p>
+<p>
+J<sub>cell,ECM</sub>=<span id="parJ_T_ECM">20</span><br/>
+<input type="range" min="0" max="100" value="20"
+	onchange="par('J_T_ECM',this.value,1)">
+</p>
+
+
+<p>
+<button onclick="seedCell()">make cell</button>
+<button onclick="killCell()">kill cell</button>
+</p>
+</body>
+</html>
+
