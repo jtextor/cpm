@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4-cell 2D CPM</title>
+<meta charset="utf-8">
+<script type="text/javascript" src="../src/DiceSet.js"></script>
+<script type="text/javascript" src="../src/CPM.js"></script>
+<script type="text/javascript" src="../src/CPMStats.js"></script>
+<script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript">
+
+
+/* The classic cell sorting simulation */
+
+
+var C,Cim,t = 0, burnin_time = 50, maxtime = 10000, w = 400
+
+function initialize(){
+
+	// Create a CPM object
+	C = new CPM( 2, {x: w, y:w}, {
+		LAMBDA_CONNECTIVITY : [0,0,0],
+		LAMBDA_P : [0,0,0],
+		LAMBDA_V : [0,25,25],
+		LAMBDA_ACT : [0,0,0],
+		MAX_ACT : [0,0,0],
+		P : [0,0,0],
+		V : [0,25,25],
+		J_T_STROMA : [NaN,16,16],
+		J_T_ECM : [NaN,16,16],
+		J_T_T : [ [NaN,NaN,NaN], [NaN,14,11], [NaN,11,2] ],
+		T : 10,
+		ACT_MEAN : "geometric"
+	})
+	//C.addStromaBorder()
+	// Create a canvas to draw on
+	Cim = new CPMCanvas( C, {zoom:2} )
+
+	for( let x = 0 ; x < w ; x += 5 ){
+		for( let y = 0 ; y < w ; y += 5 ){
+			if( (x-w/2)*(x-w/2)+(y-w/2)*(y-w/2) < 40*40 ){
+				C.seedCellAt( 1+(Math.random()<0.5), [x,y] )
+			}
+		}
+	}
+
+	// Seed two cells of each type
+	//for( i = 0 ; i < 2 ; i ++ ){
+	//	C.seedCell( 1 )
+	//	C.seedCell( 2 )
+	//}
+
+	// Burnin phase: only start drawing after the first burnin_time MCS
+	// (because cells need to increase their volume first)
+	for( i = 0 ; i < burnin_time ; i ++ ){
+		C.monteCarloStep()
+	}
+	
+	C.conf.LAMBDA_V = [0,2,2]
+
+	// simulation
+	timestep()
+}
+
+// Continue until the maximum simulation time is reached. 
+function timestep(){
+
+	if( t % 10 == 0 ){
+	// Update the grid with one MCS
+	C.monteCarloStep()
+
+	// Clear the canvas (white), and draw the stroma border in gray
+	Cim.clear( "FFFFFF" )
+	//Cim.drawStroma( "AAAAAA" )
+
+	// Draw celltype 1 black with activity values
+	Cim.drawCells( 1, "000000")
+	//Cim.drawActivityValues( 1 )
+
+	// Draw celltype 2 in red
+	Cim.drawCells( 2, "FF0000")
+
+	// Draw the borders of each cell
+	//Cim.drawCellBorders()
+	}
+
+	if( t++ < maxtime ){
+		requestAnimationFrame( timestep )
+	}
+}
+
+</script>
+<body onload="initialize()">
+
+<span id="log">
+
+</span>
+</body>
+</html>
+
