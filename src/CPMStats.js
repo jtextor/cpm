@@ -368,13 +368,13 @@ CPMStats.prototype = {
 		// loop over pixels to sum up coordinates
 		for( j = 0; j < cellpixels.length; j++ ){
 			// loop over coordinates x,y,z
-			for( dim = 0; dim < this.ndim; dim++ ){
+			for( let dim = 0; dim < this.ndim; dim++ ){
 				cvec[dim] += cellpixels[j][dim]
 			}		
 		}
 
 		// divide to get mean
-		for( dim = 0; dim < this.ndim; dim++ ){
+		for( let dim = 0; dim < this.ndim; dim++ ){
 			cvec[dim] /= j
 		}
 
@@ -397,7 +397,7 @@ CPMStats.prototype = {
 		let n = 0, 
 			centroid = Array.apply(null, Array(this.ndim)).map(Number.prototype.valueOf,0)
 		const fs = [ this.C.field_size.x, this.C.field_size.y, this.C.field_size.z ]
-		for( j = 0; j < c.length; j++ ){
+		for( let j = 0; j < c.length; j++ ){
 		
 			let centroidc, nc, d
 			centroidc = this.pixelsToCentroid( ccpixels[ c[j] ] )
@@ -491,6 +491,33 @@ CPMStats.prototype = {
 		}
 	},
 
+	// returns a list of all cell ids of the cells that border to "cell" and are of a different type
+	// a dictionairy with keys = neighbor cell ids, and 
+	// values = number of "cell"-pixels the neighbor cell borders to
+	cellNeighborsList : function( cell, cbpi ) {
+		if (!cbpi) {
+			cbpi = this.cellborderpixelsi()[cell]
+		} else {
+			cbpi = cbpi[cell]
+		}
+		let neigh_cell_amountborder = {}
+		//loop over border pixels of cell
+		for ( let cellpix = 0; cellpix < cbpi.length; cellpix++ ) {
+			//get neighbouring pixels of borderpixel of cell
+			let neighbours_of_borderpixel_cell = this.C.neighi(cbpi[cellpix])
+			//don't add a pixel in cell more than twice
+			//loop over neighbouring pixels and store the parent cell if it is different from
+			//cell, add or increment the key corresponding to the neighbor in the dictionairy
+			for ( let neighborpix = 0; neighborpix < neighbours_of_borderpixel_cell.length;
+				neighborpix ++ ) {
+				let cell_id = this.C.pixti(neighbours_of_borderpixel_cell[neighborpix])
+				if (cell_id != cell) {
+					neigh_cell_amountborder[cell_id] = neigh_cell_amountborder[cell_id]+1 || 1
+				}
+			}
+		}
+		return neigh_cell_amountborder
+	},
 
 	// ------------ HELPER FUNCTIONS
 	
@@ -520,7 +547,7 @@ CPMStats.prototype = {
 			cp[t].push( px[i] )
 		}
 		return cp
- 	},
+	},
   
 	cellborderpixelsi : function(){
 		let cp = {}, t

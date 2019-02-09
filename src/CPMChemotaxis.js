@@ -9,7 +9,7 @@ if( typeof CPM == "undefined" ){
 	CPM = require("./CPM.js" )	
 }
 
-class CPMchemotaxis extends CPM {
+class CPMChemotaxis extends CPM {
 
 	constructor( ndim, field_size, conf ) {
 		// call the parent (CPM) constructor
@@ -97,6 +97,6 @@ class CPMchemotaxis extends CPM {
 
 /* This allows using the code in either the browser or with nodejs. */
 if( typeof module !== "undefined" ){
-	module.exports = CPMchemotaxis
+	module.exports = CPMChemotaxis
 }
 
