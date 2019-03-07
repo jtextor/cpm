@@ -165,17 +165,34 @@ CPMCanvas.prototype = {
 		}
 	},
 
-	/* Draw all cells of cellkind "kind" in color col (hex). */
+	/* Draw all cells of cellkind "kind" in color col (hex). col can also be a function that
+	 * returns a hex value for a cell id. */
 	drawCells : function( kind, col ){
-		col = col || "000000"
-		this.col( col )
-
+		if( ! col ){
+			col = "000000"
+		}
+		if( typeof col == "string" ){
+			this.col(col)
+		}
 		// Object cst contains pixel index of all pixels belonging to non-background,
 		// non-stroma cells.
 		var cst = Object.keys( this.C.cellpixelstype ), i
+		var cellpixelsbyid = {}
 		for( i = 0 ; i < cst.length ; i ++ ){
-			if( this.C.cellKind(this.C.cellpixelstype[cst[i]]) == kind ){
-				this.pxf( this.i2p( cst[i] ) )
+			let cid = this.C.cellpixelstype[cst[i]]
+			if( this.C.cellKind(cid) == kind ){
+				if( !cellpixelsbyid[cid] ){
+					cellpixelsbyid[cid] = []
+				}
+				cellpixelsbyid[cid].push( cst[i] )
+			}
+		}
+		for( let cid of Object.keys( cellpixelsbyid ) ){
+			if( typeof col == "function" ){
+				this.col( col(cid) )
+			}
+			for( let cp of cellpixelsbyid[cid] ){
+				this.pxf( this.i2p( cp ) )
 			}
 		}
 	},

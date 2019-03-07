@@ -4,7 +4,6 @@
     
 
 class CPM {
-
 	constructor( ndim, field_size, conf ){
 	
 		// Attributes based on input parameters

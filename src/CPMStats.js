@@ -117,6 +117,7 @@ CPMStats.prototype = {
 		var visited = {}, k=1, volume = {}, myself = this
 
 		var labelComponent = function(seed, k){
+			console.log("seeding at ", seed )
 			var q = [parseInt(seed)]
 			visited[q[0]] = 1
 			volume[k] = 0
@@ -380,6 +381,7 @@ CPMStats.prototype = {
 
 		return cvec
 	},
+
 	// computes the centroid of a cell when grid has a torus.
 	getCentroidOfCellWithTorus : function( t, cellindices ){
 		
@@ -439,7 +441,7 @@ CPMStats.prototype = {
 			cpt = this.cellpixelsi()
 		}
 		
-		cvec = this.getCentroidOfCellWithTorus( t, cpt )
+		cvec = this.getCentroidOfCellWithTorus( t, cpt[t] )
 
 		return cvec
 	},
