@@ -39,13 +39,16 @@ for( var i = 1 ; i < C.field_size.x ; i ++ ){
 
 // actual simulation
 var t = 0
+console.time("execution")
 for( i = 0 ; i < maxtime ; i ++ ){
+	console.log(i)
 	C.monteCarloStep()
-	if( i % framerate == 0 ){
+	/*if( i % framerate == 0 ){
 		Cim.clear( "FFFFFF" )
 		//Cim.drawCells( 2, "990000" )
 		Cim.drawCells( 1, "FF0000" )
 		Cim.writePNG( "output/2d-"+t+".png" )
 		t ++
-	}
+	}*/
 }
+console.timeEnd("execution")

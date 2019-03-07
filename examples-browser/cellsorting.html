@@ -2,17 +2,22 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>4-cell 2D CPM</title>
 <meta charset="utf-8">
+<style type="text/css">
+canvas{ border: 1px solid black }
+</style>
 <script type="text/javascript" src="../src/DiceSet.js"></script>
 <script type="text/javascript" src="../src/CPM.js"></script>
 <script type="text/javascript" src="../src/CPMStats.js"></script>
 <script type="text/javascript" src="../src/CPMCanvas.js"></script>
+<script type="text/javascript" src="fpsmeter.min.js"></script>
 <script type="text/javascript">
 
 
 /* The classic cell sorting simulation */
 
 
-var C,Cim,t = 0, burnin_time = 50, maxtime = 10000, w = 400
+var C,Cim,t = 0, burnin_time = 50, maxtime = 10000, w = 200, meter,
+	r = 70
 
 function initialize(){
 
@@ -33,11 +38,11 @@ function initialize(){
 	})
 	//C.addStromaBorder()
 	// Create a canvas to draw on
-	Cim = new CPMCanvas( C, {zoom:2} )
+	Cim = new CPMCanvas( C, {zoom:1} )
 
 	for( let x = 0 ; x < w ; x += 5 ){
 		for( let y = 0 ; y < w ; y += 5 ){
-			if( (x-w/2)*(x-w/2)+(y-w/2)*(y-w/2) < 40*40 ){
+			if( (x-w/2)*(x-w/2)+(y-w/2)*(y-w/2) < r*r ){
 				C.seedCellAt( 1+(Math.random()<0.5), [x,y] )
 			}
 		}
@@ -57,16 +62,19 @@ function initialize(){
 	
 	C.conf.LAMBDA_V = [0,2,2]
 
+	meter = new FPSMeter({right:'5px',left:'auto'})
+
 	// simulation
 	timestep()
 }
 
 // Continue until the maximum simulation time is reached. 
 function timestep(){
+	// Update the grid with one MCS
+	meter.tick()
+	C.monteCarloStep()
 
 	if( t % 10 == 0 ){
-	// Update the grid with one MCS
-	C.monteCarloStep()
 
 	// Clear the canvas (white), and draw the stroma border in gray
 	Cim.clear( "FFFFFF" )
